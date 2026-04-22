@@ -7,8 +7,163 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String?
+  id                    String                @id @default(cuid())
+  email                 String                @unique
+  firstName             String
+  lastName              String?
+  passwordHash          String?
+  emailVerifiedAt       DateTime?
+  googleSubject         String?               @unique
+  locale                Locale                @default(EN)
+  onboardingCompletedAt DateTime?
+  streakCount           Int                   @default(0)
+  lastFlowCompletedAt   DateTime?
+  nextBreakAt           DateTime?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  onboarding            UserOnboarding?
+  routineDownloads      UserRoutineDownload[]
+  sessions              RoutineSession[]
+  syncLogs              SyncLog[]
+  authSessions          AuthSession[]
+  verificationCodes     EmailVerificationCode[]
+}
+
+model AuthSession {
+  id         String       @id @default(cuid())
+  token      String       @unique
+  userId     String
+  provider   AuthProvider
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime     @default(now())
+  lastUsedAt DateTime     @default(now())
+  user       User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmailVerificationCode {
+  id         String   @id @default(cuid())
+  userId      String
+  email      String
+  code       String
+  expiresAt  DateTime
+  consumedAt DateTime?
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PainRegion {
+  id        String   @id
+  nameEn    String
+  nameEs    String
+  shape     String
+  cx        Int
+  cy        Int
+  radius    Int?
+  radiusX   Int?
+  radiusY   Int?
+  sortOrder Int
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SetupOption {
+  id            String   @id
+  titleEn       String
+  titleEs       String
+  descriptionEn String
+  descriptionEs String
+  icon          String
+  sortOrder     Int
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Routine {
+  id                 String                @id @default(cuid())
+  slug               String                @unique
+  titleEn            String
+  titleEs            String
+  subtitleEn         String
+  subtitleEs         String
+  descriptionEn      String
+  descriptionEs      String
+  imageUrl           String
+  durationMinutes    Int
+  sizeMb             Int
+  category           RoutineCategory       @default(RELIEF)
+  featured           Boolean               @default(false)
+  targetPainRegionIds String[]
+  targetSetupOptionIds String[]
+  sortOrder          Int
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  downloads          UserRoutineDownload[]
+  sessions           RoutineSession[]
+}
+
+model UserOnboarding {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  painRegionIds String[]
+  setupOptionIds String[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserRoutineDownload {
+  userId       String
+  routineId    String
+  downloadedAt DateTime @default(now())
+  source       String   @default("library")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routine      Routine  @relation(fields: [routineId], references: [id], onDelete: Cascade)
+
+  @@id([userId, routineId])
+}
+
+model RoutineSession {
+  id            String        @id @default(cuid())
+  userId        String
+  routineId     String
+  status        SessionStatus @default(IN_PROGRESS)
+  progress      Int           @default(0)
+  localeAtStart Locale        @default(EN)
+  startedAt     DateTime      @default(now())
+  completedAt   DateTime?
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  routine       Routine       @relation(fields: [routineId], references: [id], onDelete: Cascade)
+}
+
+model SyncLog {
+  id          String   @id @default(cuid())
+  userId      String
+  eventType   String
+  payload     Json
+  processedAt DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Locale {
+  EN
+  ES
+}
+
+enum RoutineCategory {
+  RELIEF
+  RECOVERY
+  MOBILITY
+  BREATHWORK
+}
+
+enum SessionStatus {
+  IN_PROGRESS
+  COMPLETED
+  ABANDONED
+}
+
+enum AuthProvider {
+  EMAIL
+  GOOGLE
 }
