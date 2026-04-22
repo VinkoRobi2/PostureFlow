@@ -89,6 +89,12 @@ export type RoutineCard = {
   downloaded?: boolean;
 };
 
+export type DashboardRoutineRecommendation = RoutineCard & {
+  badge: LocalizedText;
+  categoryLabel: LocalizedText;
+  previewImageUrls: string[];
+};
+
 export type PlayerRoutine = RoutineCard & {
   repetitionsLabel: LocalizedText;
   tipTitle: LocalizedText;
@@ -117,12 +123,30 @@ export type BootstrapResponse = {
 
 export type DashboardResponse = {
   user: UserSummary;
+  systemStatus: {
+    label: LocalizedText;
+    operatorBadge: string;
+  };
   header: {
     greetingName: string;
     tagline: LocalizedText;
     offlineReady: boolean;
   };
-  featuredRoutine: RoutineCard;
+  featuredRoutine: DashboardRoutineRecommendation;
+  tensionIndex: {
+    label: LocalizedText;
+    value: number;
+    progress: number;
+  };
+  criticalZones: {
+    label: LocalizedText;
+    count: number;
+    regionLabels: LocalizedText[];
+  };
+  quickLibrary: {
+    label: LocalizedText;
+    items: DashboardRoutineRecommendation[];
+  };
   streak: {
     days: number;
     label: LocalizedText;

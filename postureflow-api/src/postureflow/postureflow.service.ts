@@ -9,6 +9,7 @@ import {
   PainRegion,
   Prisma,
   Routine,
+  RoutineCategory,
   SessionStatus,
   SetupOption,
   User,
@@ -119,26 +120,70 @@ export class PostureFlowService {
     const user = await this.getUserById(userId);
     const selectedPainRegionIds = user.onboarding?.painRegionIds ?? ['neck'];
     const selectedSetupOptionIds = user.onboarding?.setupOptionIds ?? ['laptop'];
-    const recommendedRoutine = await this.getRecommendedRoutine(
-      selectedPainRegionIds,
-      selectedSetupOptionIds,
-    );
+    const [rankedRoutines, selectedPainRegions] = await Promise.all([
+      this.getRankedRoutines(selectedPainRegionIds, selectedSetupOptionIds),
+      this.prisma.painRegion.findMany({
+        where: { id: { in: selectedPainRegionIds } },
+        orderBy: { sortOrder: 'asc' },
+      }),
+    ]);
+    const recommendedRoutine = rankedRoutines[0];
+    const quickLibraryItems = rankedRoutines.slice(1, 3);
     const downloadedRoutineIds = new Set(
       user.routineDownloads.map((download) => download.routineId),
     );
     const nextBreak = user.nextBreakAt ?? this.createNextBreakAt();
+    const tensionValue = this.calculateTensionIndex(
+      selectedPainRegionIds,
+      selectedSetupOptionIds,
+    );
+    const previewImageUrls = rankedRoutines
+      .slice(0, 3)
+      .map((routine) => routine.imageUrl);
 
     return {
       user: this.serializeUser(user),
+      systemStatus: {
+        label: this.localized('SYSTEM_ACTIVE', 'SISTEMA_ACTIVO'),
+        operatorBadge: this.getUserBadge(user),
+      },
       header: {
         greetingName: user.firstName,
         tagline: {
-          en: 'Time to realign.',
-          es: 'Hora de realinear.',
+          en: 'Adaptive recovery queue ready.',
+          es: 'Cola adaptativa de recuperacion lista.',
         },
         offlineReady: downloadedRoutineIds.size > 0,
       },
-      featuredRoutine: this.serializeRoutine(recommendedRoutine, user.locale),
+      featuredRoutine: this.serializeDashboardRoutine(
+        recommendedRoutine,
+        user.locale,
+        this.localized('Suggested Protocol', 'Protocolo Sugerido'),
+        previewImageUrls,
+      ),
+      tensionIndex: {
+        label: this.localized('Tension Index', 'Indice de Tension'),
+        value: tensionValue,
+        progress: tensionValue / 100,
+      },
+      criticalZones: {
+        label: this.localized('Critical Zones', 'Zonas Criticas'),
+        count: selectedPainRegionIds.length,
+        regionLabels: selectedPainRegions.map((region) =>
+          this.localized(region.nameEn, region.nameEs),
+        ),
+      },
+      quickLibrary: {
+        label: this.localized('Quick Library', 'Libreria Rapida'),
+        items: quickLibraryItems.map((routine) =>
+          this.serializeDashboardRoutine(
+            routine,
+            user.locale,
+            this.localized('Recommended', 'Recomendada'),
+            [routine.imageUrl],
+          ),
+        ),
+      },
       streak: {
         days: user.streakCount,
         label: {
@@ -566,6 +611,14 @@ export class PostureFlowService {
     painRegionIds: string[],
     setupOptionIds: string[],
   ) {
+    const ranked = await this.getRankedRoutines(painRegionIds, setupOptionIds);
+    return ranked[0];
+  }
+
+  private async getRankedRoutines(
+    painRegionIds: string[],
+    setupOptionIds: string[],
+  ) {
     const routines = await this.prisma.routine.findMany({
       orderBy: [{ featured: 'desc' }, { sortOrder: 'asc' }],
     });
@@ -583,8 +636,9 @@ export class PostureFlowService {
       };
     });
 
-    const best = scored.sort((a, b) => b.score - a.score)[0];
-    return best?.routine ?? routines[0];
+    return scored
+      .sort((a, b) => b.score - a.score)
+      .map((entry) => entry.routine);
   }
 
   private serializeUser(user: User & { onboarding?: { painRegionIds: string[]; setupOptionIds: string[] } | null }) {
@@ -644,6 +698,20 @@ export class PostureFlowService {
     };
   }
 
+  private serializeDashboardRoutine(
+    routine: Routine,
+    locale: Locale,
+    badge: LocalizedText,
+    previewImageUrls: string[],
+  ) {
+    return {
+      ...this.serializeRoutine(routine, locale),
+      badge,
+      categoryLabel: this.getRoutineCategoryLabel(routine.category),
+      previewImageUrls,
+    };
+  }
+
   private serializePlayerRoutine(routine: Routine, locale: Locale) {
     const tip = routine.slug === 'deep-cervical-decompression'
       ? this.localized(
@@ -690,6 +758,36 @@ export class PostureFlowService {
 
   private localized(en: string, es: string): LocalizedText {
     return { en, es };
+  }
+
+  private getRoutineCategoryLabel(category: RoutineCategory) {
+    switch (category) {
+      case 'RECOVERY':
+        return this.localized('Recovery', 'Recuperacion');
+      case 'MOBILITY':
+        return this.localized('Preventive', 'Preventivo');
+      case 'BREATHWORK':
+        return this.localized('Reset', 'Reset');
+      case 'RELIEF':
+      default:
+        return this.localized('Focus', 'Enfoque');
+    }
+  }
+
+  private calculateTensionIndex(
+    painRegionIds: string[],
+    setupOptionIds: string[],
+  ) {
+    return Math.min(
+      96,
+      18 + painRegionIds.length * 12 + (setupOptionIds.length > 0 ? 8 : 0),
+    );
+  }
+
+  private getUserBadge(user: User) {
+    return `${(user.firstName?.[0] ?? 'A').toUpperCase()}${(
+      user.lastName?.[0] ?? 'L'
+    ).toUpperCase()}`;
   }
 
   private createNextBreakAt() {

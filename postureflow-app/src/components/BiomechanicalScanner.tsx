@@ -2,7 +2,7 @@ import Body, {
   type ExtendedBodyPart,
   type Slug,
 } from "react-native-body-highlighter";
-import { ChevronRight } from "lucide-react-native";
+import { Activity, ChevronRight } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { type DimensionValue, Pressable, Text, View } from "react-native";
 import { messages } from "../i18n/messages";
@@ -10,8 +10,8 @@ import type { LocaleCode, PainRegion } from "../types/app";
 import { getLocalizedText } from "../utils/localize";
 
 type ScannerRegionId = string;
-
 type ScannerView = "front" | "back";
+type FigureMode = "both" | ScannerView;
 
 type Hotspot = {
   id: ScannerRegionId;
@@ -30,13 +30,18 @@ type BiomechanicalScannerProps = {
 
 const SCANNER_THEME = {
   background: "#000000",
-  surface: "#18181B",
-  surfaceAlt: "#0F0F12",
-  border: "#27272A",
+  surface: "#14161B",
+  surfaceAlt: "#0C0F13",
+  panel: "#11151B",
+  border: "#242A33",
+  borderStrong: "#303744",
   accent: "#10B981",
   accentStroke: "#34D399",
   primaryText: "#FFFFFF",
   secondaryText: "#A1A1AA",
+  tertiaryText: "#6B7280",
+  figureIdle: "#262B33",
+  figureStroke: "#343A45",
 } as const;
 
 const REGION_ORDER: ScannerRegionId[] = [
@@ -57,8 +62,8 @@ const REGION_ORDER: ScannerRegionId[] = [
 ];
 
 const BODY_SIZE = {
-  width: 148,
-  height: 286,
+  width: 156,
+  height: 300,
 } as const;
 
 const HOTSPOTS: Record<ScannerView, Hotspot[]> = {
@@ -111,292 +116,66 @@ const REGION_TO_BODY_PARTS: Record<
   Record<ScannerView, ExtendedBodyPart[]>
 > = {
   neck: {
-    front: [
-      {
-        slug: "neck",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
-    back: [
-      {
-        slug: "neck",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
+    front: [{ slug: "neck", styles: activeStyles() }],
+    back: [{ slug: "neck", styles: activeStyles() }],
   },
   shoulders: {
-    front: [
-      {
-        slug: "deltoids",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
+    front: [{ slug: "deltoids", styles: activeStyles() }],
     back: [
-      {
-        slug: "deltoids",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-      {
-        slug: "trapezius",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
+      { slug: "deltoids", styles: activeStyles() },
+      { slug: "trapezius", styles: activeStyles() },
     ],
   },
   chest: {
-    front: [
-      {
-        slug: "chest",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
+    front: [{ slug: "chest", styles: activeStyles() }],
     back: [],
   },
   arms: {
-    front: [
-      {
-        slug: "biceps",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
-    back: [
-      {
-        slug: "triceps",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
+    front: [{ slug: "biceps", styles: activeStyles() }],
+    back: [{ slug: "triceps", styles: activeStyles() }],
   },
   forearms: {
-    front: [
-      {
-        slug: "forearm",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
-    back: [
-      {
-        slug: "forearm",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
+    front: [{ slug: "forearm", styles: activeStyles() }],
+    back: [{ slug: "forearm", styles: activeStyles() }],
   },
   hands: {
-    front: [
-      {
-        slug: "hands",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
-    back: [
-      {
-        slug: "hands",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
+    front: [{ slug: "hands", styles: activeStyles() }],
+    back: [{ slug: "hands", styles: activeStyles() }],
   },
   core: {
     front: [
-      {
-        slug: "abs",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-      {
-        slug: "obliques",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
+      { slug: "abs", styles: activeStyles() },
+      { slug: "obliques", styles: activeStyles() },
     ],
     back: [],
   },
   upper_back: {
     front: [],
-    back: [
-      {
-        slug: "upper-back",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
+    back: [{ slug: "upper-back", styles: activeStyles() }],
   },
   lower_back: {
     front: [],
-    back: [
-      {
-        slug: "lower-back",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
+    back: [{ slug: "lower-back", styles: activeStyles() }],
   },
   hips: {
-    front: [
-      {
-        slug: "adductors",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
-    back: [
-      {
-        slug: "gluteal",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
+    front: [{ slug: "adductors", styles: activeStyles() }],
+    back: [{ slug: "gluteal", styles: activeStyles() }],
   },
   legs: {
-    front: [
-      {
-        slug: "quadriceps",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
-    back: [
-      {
-        slug: "hamstring",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
+    front: [{ slug: "quadriceps", styles: activeStyles() }],
+    back: [{ slug: "hamstring", styles: activeStyles() }],
   },
   knees: {
-    front: [
-      {
-        slug: "knees",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
-    back: [
-      {
-        slug: "knees",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
+    front: [{ slug: "knees", styles: activeStyles() }],
+    back: [{ slug: "knees", styles: activeStyles() }],
   },
   calves: {
-    front: [
-      {
-        slug: "tibialis",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
-    back: [
-      {
-        slug: "calves",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
+    front: [{ slug: "tibialis", styles: activeStyles() }],
+    back: [{ slug: "calves", styles: activeStyles() }],
   },
   feet: {
-    front: [
-      {
-        slug: "feet",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
-    back: [
-      {
-        slug: "feet",
-        styles: {
-          fill: SCANNER_THEME.accent,
-          stroke: SCANNER_THEME.accentStroke,
-          strokeWidth: 1.1,
-        },
-      },
-    ],
+    front: [{ slug: "feet", styles: activeStyles() }],
+    back: [{ slug: "feet", styles: activeStyles() }],
   },
 };
 
@@ -433,6 +212,14 @@ const SLUG_TO_REGION: Record<ScannerView, Partial<Record<Slug, ScannerRegionId>>
   },
 };
 
+function activeStyles() {
+  return {
+    fill: SCANNER_THEME.accent,
+    stroke: SCANNER_THEME.accentStroke,
+    strokeWidth: 1.1,
+  };
+}
+
 function BodyHotspots({
   selectedParts,
   side,
@@ -462,12 +249,10 @@ function BodyHotspots({
               backgroundColor: isSelected
                 ? "rgba(16,185,129,0.18)"
                 : pressed
-                  ? "rgba(39,39,42,0.55)"
+                  ? "rgba(36,42,51,0.55)"
                   : "transparent",
               borderWidth: isSelected ? 1 : 0,
-              borderColor: isSelected
-                ? SCANNER_THEME.accent
-                : "transparent",
+              borderColor: isSelected ? SCANNER_THEME.accent : "transparent",
             })}
           />
         );
@@ -476,7 +261,7 @@ function BodyHotspots({
   );
 }
 
-function BodyColumn({
+function BodyFigure({
   data,
   label,
   side,
@@ -492,36 +277,37 @@ function BodyColumn({
   onToggle: (part: ScannerRegionId) => void;
 }) {
   return (
-    <View style={{ alignItems: "center", width: BODY_SIZE.width + 8 }}>
+    <View style={{ alignItems: "center", width: BODY_SIZE.width + 6 }}>
       <Text
         style={{
-          color: SCANNER_THEME.secondaryText,
+          color: SCANNER_THEME.tertiaryText,
           fontSize: 10,
           fontWeight: "700",
-          letterSpacing: 1.8,
-          marginBottom: 6,
+          letterSpacing: 1.6,
+          marginBottom: 10,
           textTransform: "uppercase",
         }}
       >
         {label}
       </Text>
+
       <View
         style={{
           width: BODY_SIZE.width,
           height: BODY_SIZE.height,
+          position: "relative",
           alignItems: "center",
           justifyContent: "center",
-          position: "relative",
         }}
       >
         <Body
           border="none"
           data={data}
-          defaultFill={SCANNER_THEME.surface}
-          defaultStroke={SCANNER_THEME.border}
+          defaultFill={SCANNER_THEME.figureIdle}
+          defaultStroke={SCANNER_THEME.figureStroke}
           defaultStrokeWidth={1}
           gender="male"
-          scale={0.73}
+          scale={0.72}
           side={side}
           onBodyPartPress={(part) => onPress(part.slug)}
         />
@@ -544,6 +330,7 @@ export function BiomechanicalScanner({
 }: BiomechanicalScannerProps) {
   const [selectedParts, setSelectedParts] =
     useState<ScannerRegionId[]>(initialSelectedParts);
+  const [figureMode, setFigureMode] = useState<FigureMode>("both");
   const copy = messages[locale];
 
   const regionOptions = useMemo(
@@ -560,25 +347,29 @@ export function BiomechanicalScanner({
   );
 
   const selectedLabels = useMemo(
-    () =>
-      regionOptions.filter((region) => selectedParts.includes(region.id)),
+    () => regionOptions.filter((region) => selectedParts.includes(region.id)),
     [regionOptions, selectedParts],
+  );
+
+  const selectedSummary = useMemo(
+    () => selectedLabels.map((item) => item.label).join(" • "),
+    [selectedLabels],
+  );
+
+  const frontData = useMemo(
+    () => selectedParts.flatMap((part) => REGION_TO_BODY_PARTS[part]?.front ?? []),
+    [selectedParts],
+  );
+
+  const backData = useMemo(
+    () => selectedParts.flatMap((part) => REGION_TO_BODY_PARTS[part]?.back ?? []),
+    [selectedParts],
   );
 
   const continueLabel =
     selectedParts.length > 0
       ? copy.painMap.continueWithSelection
       : copy.painMap.continueButton;
-
-  const frontData = useMemo(
-    () => selectedParts.flatMap((part) => REGION_TO_BODY_PARTS[part].front),
-    [selectedParts],
-  );
-
-  const backData = useMemo(
-    () => selectedParts.flatMap((part) => REGION_TO_BODY_PARTS[part].back),
-    [selectedParts],
-  );
 
   const togglePart = (part: ScannerRegionId) => {
     setSelectedParts((current) =>
@@ -603,155 +394,217 @@ export function BiomechanicalScanner({
 
   return (
     <View className="flex-1">
-      <View className="mb-4">
-        <View className="mb-3 flex-row items-center">
+      <View className="mb-3">
+        <View
+          style={{
+            marginBottom: 10,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <View className="flex-row items-center">
+            <View
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: 999,
+                backgroundColor: SCANNER_THEME.accent,
+                marginRight: 8,
+              }}
+            />
+            <Text
+              style={{
+                color: SCANNER_THEME.accent,
+                fontSize: 10,
+                fontWeight: "700",
+                letterSpacing: 2,
+                textTransform: "uppercase",
+              }}
+            >
+              {copy.painMap.scanner}
+            </Text>
+          </View>
+
           <View
             style={{
-              width: 8,
-              height: 8,
+              minWidth: 62,
               borderRadius: 999,
-              backgroundColor: SCANNER_THEME.accent,
-              marginRight: 8,
-            }}
-          />
-          <Text
-            style={{
-              color: SCANNER_THEME.accent,
-              fontSize: 10,
-              fontWeight: "700",
-              letterSpacing: 2,
-              textTransform: "uppercase",
+              borderWidth: 1,
+              borderColor: SCANNER_THEME.border,
+              backgroundColor: SCANNER_THEME.surface,
+              paddingHorizontal: 10,
+              paddingVertical: 6,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            {copy.painMap.scanner}
-          </Text>
+            <Activity color={SCANNER_THEME.accent} size={12} />
+            <Text
+              style={{
+                color: SCANNER_THEME.primaryText,
+                fontSize: 12,
+                fontWeight: "700",
+                marginLeft: 6,
+              }}
+            >
+              {selectedParts.length}
+            </Text>
+          </View>
         </View>
 
         <Text
           style={{
             color: SCANNER_THEME.primaryText,
-            fontSize: 26,
-            fontWeight: "500",
-            lineHeight: 31,
-            marginBottom: 6,
+            fontSize: 24,
+            fontWeight: "800",
+            lineHeight: 30,
+            maxWidth: 280,
           }}
         >
-          {copy.painMap.title}
-        </Text>
-
-        <Text
-          style={{
-            color: SCANNER_THEME.secondaryText,
-            fontSize: 13,
-            lineHeight: 19,
-          }}
-        >
-          {copy.painMap.subtitle}
-        </Text>
-      </View>
-
-      <View
-        style={{
-          marginBottom: 12,
-          alignItems: "center",
-          borderRadius: 14,
-          backgroundColor: SCANNER_THEME.surface,
-          flexDirection: "row",
-          justifyContent: "space-between",
-          paddingHorizontal: 14,
-          paddingVertical: 10,
-        }}
-      >
-        <Text
-          style={{
-            color: SCANNER_THEME.secondaryText,
-            fontSize: 12,
-            fontWeight: "600",
-          }}
-        >
-          {copy.painMap.helper}
-        </Text>
-        <Text
-          style={{
-            color: selectedParts.length > 0
-              ? SCANNER_THEME.accent
-              : SCANNER_THEME.secondaryText,
-            fontSize: 12,
-            fontWeight: "700",
-          }}
-        >
-          {`${selectedParts.length} ${copy.painMap.selectedCount}`}
+          {copy.painMap.titleLead}{" "}
+          <Text style={{ color: SCANNER_THEME.accent }}>
+            {copy.painMap.titleAccent}
+          </Text>
         </Text>
       </View>
 
       <View
         style={{
           flex: 1,
-          backgroundColor: SCANNER_THEME.surfaceAlt,
+          minHeight: 0,
           borderRadius: 24,
           borderWidth: 1,
-          borderColor: SCANNER_THEME.border,
-          paddingVertical: 14,
-          paddingHorizontal: 12,
+          borderColor: SCANNER_THEME.borderStrong,
+          backgroundColor: SCANNER_THEME.panel,
+          paddingHorizontal: 14,
+          paddingTop: 12,
+          paddingBottom: 8,
         }}
       >
         <View
           style={{
-            alignItems: "center",
+            marginBottom: 14,
             flexDirection: "row",
-            justifyContent: "space-between",
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: SCANNER_THEME.border,
+            backgroundColor: SCANNER_THEME.surfaceAlt,
+            padding: 4,
           }}
         >
-          <BodyColumn
-            data={frontData}
-            label={copy.painMap.front}
-            selectedParts={selectedParts}
-            side="front"
-            onPress={(slug) => handleBodyPartPress("front", slug)}
-            onToggle={togglePart}
-          />
+          {([
+            { id: "both", label: copy.painMap.both },
+            { id: "front", label: copy.painMap.front },
+            { id: "back", label: copy.painMap.back },
+          ] as const).map((option) => {
+            const active = figureMode === option.id;
 
-          <View
-            style={{
-              width: 1,
-              height: 214,
-              backgroundColor: SCANNER_THEME.border,
-            }}
-          />
+            return (
+              <Pressable
+                key={option.id}
+                onPress={() => setFigureMode(option.id)}
+                style={{
+                  flex: 1,
+                  borderRadius: 10,
+                  borderWidth: 1,
+                  borderColor: active
+                    ? "rgba(16,185,129,0.55)"
+                    : "transparent",
+                  backgroundColor: active
+                    ? "rgba(16,185,129,0.16)"
+                    : "transparent",
+                  paddingVertical: 8,
+                }}
+              >
+                <Text
+                  style={{
+                    color: active
+                      ? SCANNER_THEME.accent
+                      : SCANNER_THEME.tertiaryText,
+                    fontSize: 11,
+                    fontWeight: "800",
+                    letterSpacing: 1.1,
+                    textAlign: "center",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
 
-          <BodyColumn
-            data={backData}
-            label={copy.painMap.back}
-            selectedParts={selectedParts}
-            side="back"
-            onPress={(slug) => handleBodyPartPress("back", slug)}
-            onToggle={togglePart}
-          />
+        <View
+          style={{
+            flex: 1,
+            minHeight: 0,
+            alignItems: "center",
+            justifyContent: "center",
+            flexDirection: figureMode === "both" ? "row" : "column",
+          }}
+        >
+          {(figureMode === "both" || figureMode === "front") && (
+            <BodyFigure
+              data={frontData}
+              label={copy.painMap.front}
+              side="front"
+              selectedParts={selectedParts}
+              onPress={(slug) => handleBodyPartPress("front", slug)}
+              onToggle={togglePart}
+            />
+          )}
+
+          {figureMode === "both" ? (
+            <View
+              style={{
+                width: 1,
+                alignSelf: "stretch",
+                marginHorizontal: 4,
+                backgroundColor: SCANNER_THEME.border,
+              }}
+            />
+          ) : null}
+
+          {(figureMode === "both" || figureMode === "back") && (
+            <BodyFigure
+              data={backData}
+              label={copy.painMap.back}
+              side="back"
+              selectedParts={selectedParts}
+              onPress={(slug) => handleBodyPartPress("back", slug)}
+              onToggle={togglePart}
+            />
+          )}
         </View>
       </View>
 
       <View
         style={{
-          marginTop: 14,
+          marginTop: 10,
+          paddingTop: 10,
+          paddingBottom: 8,
         }}
       >
         <View
           style={{
-            backgroundColor: SCANNER_THEME.surfaceAlt,
-            borderRadius: 18,
+            marginBottom: 8,
+            borderRadius: 16,
             borderWidth: 1,
             borderColor: SCANNER_THEME.border,
-            marginBottom: 12,
-            paddingHorizontal: 14,
-            paddingVertical: 12,
+            backgroundColor: SCANNER_THEME.surface,
+            paddingHorizontal: 12,
+            paddingVertical: 10,
           }}
         >
           <Text
             style={{
               color: SCANNER_THEME.primaryText,
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: "700",
-              marginBottom: 4,
+              marginBottom: 3,
             }}
           >
             {copy.painMap.continueTitle}
@@ -759,131 +612,63 @@ export function BiomechanicalScanner({
           <Text
             style={{
               color: SCANNER_THEME.secondaryText,
-              fontSize: 12,
-              lineHeight: 17,
+              fontSize: 11,
+              lineHeight: 15,
             }}
           >
             {selectedParts.length > 0
-              ? `${selectedParts.length} ${copy.painMap.selectedCount}. ${copy.painMap.continueHint}`
+              ? `${selectedSummary}. ${copy.painMap.continueHint}`
               : copy.painMap.empty}
           </Text>
         </View>
-
-        {selectedLabels.length > 0 ? (
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              marginBottom: 12,
-            }}
-          >
-            {selectedLabels.map((item) => (
-              <Pressable
-                key={item.id}
-                onPress={() => togglePart(item.id)}
-                style={({ pressed }) => ({
-                  marginBottom: 6,
-                  marginRight: 8,
-                  borderRadius: 999,
-                  backgroundColor: pressed
-                    ? SCANNER_THEME.accent
-                    : SCANNER_THEME.surface,
-                  borderWidth: 1,
-                  borderColor: pressed
-                    ? SCANNER_THEME.accent
-                    : SCANNER_THEME.border,
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                })}
-              >
-                {({ pressed }) => (
-                  <Text
-                    style={{
-                      color: pressed
-                        ? SCANNER_THEME.background
-                        : SCANNER_THEME.secondaryText,
-                      fontSize: 11,
-                      fontWeight: "600",
-                    }}
-                  >
-                    {item.label}
-                  </Text>
-                )}
-              </Pressable>
-            ))}
-          </View>
-        ) : (
-          <Text
-            style={{
-              color: SCANNER_THEME.secondaryText,
-              fontSize: 12,
-              lineHeight: 17,
-              marginBottom: 12,
-            }}
-          >
-            {copy.painMap.empty}
-          </Text>
-        )}
 
         <Pressable
           disabled={selectedParts.length === 0}
           onPress={() => onConfirm(selectedParts)}
           style={({ pressed }) => ({
-            alignItems: "center",
-            backgroundColor:
-              selectedParts.length > 0
-                ? SCANNER_THEME.accent
-                : SCANNER_THEME.surface,
-            borderRadius: 16,
-            borderWidth: 1,
-            borderColor:
-              selectedParts.length > 0
-                ? SCANNER_THEME.accent
-                : SCANNER_THEME.border,
+            minHeight: 58,
+            borderRadius: 18,
+            borderWidth: 1.5,
+            borderColor: SCANNER_THEME.accentStroke,
+            backgroundColor: SCANNER_THEME.accent,
             flexDirection: "row",
-            justifyContent: "space-between",
-            opacity: selectedParts.length === 0 ? 0.72 : pressed ? 0.92 : 1,
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: selectedParts.length === 0 ? 0.45 : pressed ? 0.92 : 1,
             paddingHorizontal: 16,
-            paddingVertical: 16,
+            shadowColor: SCANNER_THEME.accent,
+            shadowOpacity: 0.34,
+            shadowRadius: 18,
+            shadowOffset: { width: 0, height: 10 },
+            elevation: 7,
           })}
         >
-          <View style={{ flex: 1, paddingRight: 12 }}>
-            <Text
-              style={{
-                color:
-                  selectedParts.length > 0
-                    ? SCANNER_THEME.background
-                    : SCANNER_THEME.secondaryText,
-                fontSize: 14,
-                fontWeight: "800",
-                marginBottom: 2,
-              }}
-            >
-              {continueLabel}
-            </Text>
-            <Text
-              style={{
-                color:
-                  selectedParts.length > 0
-                    ? "rgba(0,0,0,0.72)"
-                    : SCANNER_THEME.secondaryText,
-                fontSize: 11,
-                lineHeight: 15,
-              }}
-            >
-              {selectedParts.length > 0
-                ? copy.painMap.continueHint
-                : copy.painMap.empty}
-            </Text>
+          <Text
+            style={{
+              color: SCANNER_THEME.primaryText,
+              fontSize: 16,
+              fontWeight: "800",
+              marginRight: 12,
+              letterSpacing: 0.3,
+            }}
+          >
+            {continueLabel}
+          </Text>
+          <View
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 999,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "rgba(255,255,255,0.18)",
+            }}
+          >
+            <ChevronRight
+              color={SCANNER_THEME.primaryText}
+              size={17}
+            />
           </View>
-          <ChevronRight
-            color={
-              selectedParts.length > 0
-                ? SCANNER_THEME.background
-                : SCANNER_THEME.secondaryText
-            }
-            size={18}
-          />
         </Pressable>
       </View>
     </View>

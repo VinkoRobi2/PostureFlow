@@ -1,8 +1,10 @@
 import {
   BootstrapResponse,
   DashboardResponse,
+  DashboardRoutineRecommendation,
   LibraryResponse,
   LocaleCode,
+  LocalizedText,
   PaywallResponse,
   RoutineCard,
   UserSummary,
@@ -156,25 +158,31 @@ const FALLBACK_PAIN_REGIONS = [
 
 const FALLBACK_SETUP_OPTIONS = [
   {
-    id: "laptop",
-    title: { en: "Single Screen Laptop", es: "1 Pantalla (Laptop)" },
-    description: { en: "Neck flexion and lowered gaze", es: "Mirando hacia abajo" },
-    icon: "MonitorSmartphone",
-  },
-  {
-    id: "multi",
-    title: { en: "Multiple Monitors", es: "Multiples Monitores" },
-    description: { en: "Frequent neck rotation", es: "Giros de cuello" },
-    icon: "Monitor",
-  },
-  {
-    id: "chair",
-    title: { en: "Chair Without Lumbar Support", es: "Silla sin soporte lumbar" },
+    id: "deep_focus",
+    title: { en: "Deep Focus (The Zone)", es: "Deep Focus (La Zona)" },
     description: {
-      en: "Lower back tension builds faster",
-      es: "Tension en espalda",
+      en: "Physical tension but high mental energy. Fast-paced flow.",
+      es: "Tension fisica pero energia mental alta. Flujo de ritmo rapido.",
     },
-    icon: "Armchair",
+    icon: "Cpu",
+  },
+  {
+    id: "digital_fatigue",
+    title: { en: "Digital Fatigue", es: "Fatiga Digital" },
+    description: {
+      en: "Eye strain and mental fog. Focus on slow movements and ocular relief.",
+      es: "Fatiga visual y niebla mental. Prioriza movimientos lentos y alivio ocular.",
+    },
+    icon: "Eye",
+  },
+  {
+    id: "burnout",
+    title: { en: "End of Shift / Burnout", es: "Fin de Turno / Burnout" },
+    description: {
+      en: "Full body exhaustion. Pure restorative and grounding session.",
+      es: "Agotamiento corporal completo. Sesion puramente restaurativa y de aterrizaje.",
+    },
+    icon: "BatteryLow",
   },
 ] as const;
 
@@ -259,6 +267,75 @@ const FALLBACK_ROUTINES: RoutineCard[] = [
     downloaded: false,
   },
 ];
+
+function localized(en: string, es: string): LocalizedText {
+  return { en, es };
+}
+
+function getRoutineCategoryLabel(slug: string): LocalizedText {
+  if (slug.includes("lumbar")) {
+    return localized("Recovery", "Recuperacion");
+  }
+
+  if (slug.includes("chest")) {
+    return localized("Preventive", "Preventivo");
+  }
+
+  if (slug.includes("flight")) {
+    return localized("Reset", "Reset");
+  }
+
+  return localized("Focus", "Enfoque");
+}
+
+function scoreRoutine(routine: RoutineCard, painRegionIds: string[]) {
+  let score = 1;
+
+  if (painRegionIds.includes("neck") && routine.slug.includes("cervical")) {
+    score += 6;
+  }
+
+  if (
+    painRegionIds.some((region) => ["lower_back", "hips", "core", "legs"].includes(region)) &&
+    routine.slug.includes("lumbar")
+  ) {
+    score += 6;
+  }
+
+  if (
+    painRegionIds.some((region) => ["shoulders", "upper_back", "chest", "arms"].includes(region)) &&
+    routine.slug.includes("chest")
+  ) {
+    score += 5;
+  }
+
+  if (routine.slug.includes("flight")) {
+    score += Math.max(0, painRegionIds.length - 1);
+  }
+
+  return score;
+}
+
+function getRankedFallbackRoutines(painRegionIds: string[]) {
+  return [...FALLBACK_ROUTINES].sort(
+    (left, right) => scoreRoutine(right, painRegionIds) - scoreRoutine(left, painRegionIds),
+  );
+}
+
+function toDashboardRoutine(
+  routine: RoutineCard,
+  locale: LocaleCode,
+  previewImageUrls: string[],
+  badge: LocalizedText,
+): DashboardRoutineRecommendation {
+  return {
+    ...routine,
+    locale: toBackendLocale(locale),
+    badge,
+    categoryLabel: getRoutineCategoryLabel(routine.slug),
+    previewImageUrls,
+  };
+}
 
 export function createFallbackPaywall(): PaywallResponse {
   return {
@@ -371,22 +448,75 @@ export function createFallbackDashboard(
   const selectedPainRegionIds = bootstrap.user.painRegionIds.length
     ? bootstrap.user.painRegionIds
     : ["neck"];
-  const featuredRoutine = {
-    ...FALLBACK_ROUTINES[0],
-    locale: toBackendLocale(locale),
-  };
+  const rankedRoutines = getRankedFallbackRoutines(selectedPainRegionIds);
+  const featuredRoutine = rankedRoutines[0] ?? FALLBACK_ROUTINES[0];
+  const quickLibraryItems = rankedRoutines.slice(1, 3);
+  const selectedRegions = FALLBACK_PAIN_REGIONS.filter((region) =>
+    selectedPainRegionIds.includes(region.id),
+  );
+  const tensionValue = Math.min(
+    96,
+    18 + selectedPainRegionIds.length * 12 + (bootstrap.user.setupOptionIds.length > 0 ? 8 : 0),
+  );
+  const previewImageUrls = rankedRoutines
+    .slice(0, 3)
+    .map((routine) => routine.imageUrl);
 
   return {
     user: bootstrap.user,
+    systemStatus: {
+      label: {
+        en: "SYSTEM_ACTIVE",
+        es: "SISTEMA_ACTIVO",
+      },
+      operatorBadge: `${(bootstrap.user.firstName[0] ?? "A").toUpperCase()}${(
+        bootstrap.user.lastName?.[0] ?? "L"
+      ).toUpperCase()}`,
+    },
     header: {
       greetingName: bootstrap.user.firstName,
       tagline: {
-        en: "Time to realign.",
-        es: "Hora de realinear.",
+        en: "Adaptive recovery queue ready.",
+        es: "Cola adaptativa de recuperacion lista.",
       },
       offlineReady: true,
     },
-    featuredRoutine,
+    featuredRoutine: toDashboardRoutine(
+      featuredRoutine,
+      locale,
+      previewImageUrls,
+      localized("Suggested Protocol", "Protocolo Sugerido"),
+    ),
+    tensionIndex: {
+      label: {
+        en: "Tension Index",
+        es: "Indice de Tension",
+      },
+      value: tensionValue,
+      progress: tensionValue / 100,
+    },
+    criticalZones: {
+      label: {
+        en: "Critical Zones",
+        es: "Zonas Criticas",
+      },
+      count: selectedPainRegionIds.length,
+      regionLabels: selectedRegions.map((region) => region.label),
+    },
+    quickLibrary: {
+      label: {
+        en: "Quick Library",
+        es: "Libreria Rapida",
+      },
+      items: quickLibraryItems.map((routine) =>
+        toDashboardRoutine(
+          routine,
+          locale,
+          [routine.imageUrl],
+          localized("Recommended", "Recomendada"),
+        ),
+      ),
+    },
     streak: {
       days: bootstrap.user.streakCount,
       label: {

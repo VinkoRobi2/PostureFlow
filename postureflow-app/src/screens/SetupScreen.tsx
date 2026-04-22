@@ -1,12 +1,11 @@
 import {
-  Armchair,
+  BatteryLow,
   CheckCircle2,
-  Monitor,
-  MonitorSmartphone,
+  Cpu,
+  Eye,
 } from "lucide-react-native";
-import { Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { BentoCard } from "../components/BentoCard";
 import { LanguageToggle } from "../components/LanguageToggle";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { messages } from "../i18n/messages";
@@ -17,10 +16,23 @@ import { getLocalizedText } from "../utils/localize";
 type Props = AppScreenProps<"Setup">;
 
 const iconMap = {
-  Monitor,
-  MonitorSmartphone,
-  Armchair,
-};
+  Cpu,
+  Eye,
+  BatteryLow,
+} as const;
+
+const SCREEN_THEME = {
+  background: "#000000",
+  surface: "#11151B",
+  surfaceAlt: "#14161B",
+  border: "#242A33",
+  borderStrong: "#303744",
+  accent: "#10B981",
+  accentStroke: "#34D399",
+  primaryText: "#E4E4E7",
+  secondaryText: "#A1A1AA",
+  tertiaryText: "#6B7280",
+} as const;
 
 export function SetupScreen({ navigation }: Props) {
   const { bootstrap, locale, setupSelection, setSetupSelection, toggleLocale } =
@@ -34,109 +46,239 @@ export function SetupScreen({ navigation }: Props) {
           flex: 1,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#f8fafc",
+          backgroundColor: SCREEN_THEME.background,
         }}
       >
-        <Text className="text-base font-medium text-slate-500">
+        <Text
+          style={{
+            color: SCREEN_THEME.secondaryText,
+            fontSize: 16,
+            fontWeight: "600",
+          }}
+        >
           {copy.common.loading}
         </Text>
       </SafeAreaView>
     );
   }
 
+  const availableOptionIds = bootstrap.onboarding.setupOptions.map((option) => option.id);
+  const activeSelection = setupSelection.filter((id) =>
+    availableOptionIds.includes(id),
+  );
+
   const toggleOption = (id: string) => {
     setSetupSelection(
-      setupSelection.includes(id)
-        ? setupSelection.filter((value) => value !== id)
-        : [...setupSelection, id],
+      activeSelection.includes(id)
+        ? activeSelection.filter((value) => value !== id)
+        : [id],
     );
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }}>
-      <View className="flex-1 px-6 py-6" style={{ maxWidth: 460, alignSelf: "center" }}>
-        <View className="mb-8 flex-row items-start justify-between">
-          <View className="mr-4 flex-1">
-            <View className="mb-4 self-start rounded-full bg-teal-50 px-3 py-1">
-              <Text className="text-xs font-semibold uppercase tracking-[1px] text-teal-700">
+    <SafeAreaView style={{ flex: 1, backgroundColor: SCREEN_THEME.background }}>
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{
+          flexGrow: 1,
+          maxWidth: 460,
+          alignSelf: "center",
+          width: "100%",
+          paddingHorizontal: 24,
+          paddingTop: 20,
+          paddingBottom: 28,
+        }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View
+          style={{
+            marginBottom: 26,
+            flexDirection: "row",
+            alignItems: "flex-start",
+            justifyContent: "space-between",
+          }}
+        >
+          <View style={{ flex: 1, paddingRight: 16 }}>
+            <View
+              style={{
+                marginBottom: 16,
+                alignSelf: "flex-start",
+                borderRadius: 999,
+                backgroundColor: SCREEN_THEME.surfaceAlt,
+                borderWidth: 1,
+                borderColor: SCREEN_THEME.border,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+              }}
+            >
+              <Text
+                style={{
+                  color: SCREEN_THEME.accent,
+                  fontSize: 11,
+                  fontWeight: "700",
+                  letterSpacing: 1.2,
+                  textTransform: "uppercase",
+                }}
+              >
                 {copy.setup.step}
               </Text>
             </View>
-            <Text className="text-3xl font-light leading-10 text-slate-800">
+
+            <Text
+              style={{
+                color: SCREEN_THEME.primaryText,
+                fontSize: 29,
+                fontWeight: "700",
+                lineHeight: 34,
+              }}
+            >
               {copy.setup.title}
             </Text>
-            <Text className="mt-3 text-base font-medium text-slate-500">
+
+            <Text
+              style={{
+                color: SCREEN_THEME.secondaryText,
+                fontSize: 15,
+                lineHeight: 22,
+                marginTop: 10,
+                maxWidth: 310,
+              }}
+            >
               {copy.setup.subtitle}
             </Text>
           </View>
-          <LanguageToggle locale={locale} onToggle={() => void toggleLocale()} />
+
+          <LanguageToggle
+            locale={locale}
+            onToggle={() => void toggleLocale()}
+            variant="dark"
+          />
         </View>
 
-        <View className="flex-1 justify-center">
-          <View className="gap-4">
-            {bootstrap.onboarding.setupOptions.map((option) => {
-              const isSelected = setupSelection.includes(option.id);
-              const Icon =
-                iconMap[option.icon as keyof typeof iconMap] ?? MonitorSmartphone;
+        <View style={{ flex: 1 }}>
+          {bootstrap.onboarding.setupOptions.map((option, index) => {
+            const isSelected = activeSelection.includes(option.id);
+            const Icon = iconMap[option.icon as keyof typeof iconMap] ?? Cpu;
 
-              return (
-                <BentoCard
-                  key={option.id}
-                  onPress={() => toggleOption(option.id)}
-                  className={`p-6 ${isSelected ? "border-teal-500 bg-teal-50/40" : ""}`}
+            return (
+              <Pressable
+                key={option.id}
+                onPress={() => toggleOption(option.id)}
+                style={({ pressed }) => ({
+                  marginBottom:
+                    index === bootstrap.onboarding.setupOptions.length - 1 ? 0 : 14,
+                  borderRadius: 24,
+                  borderWidth: 1,
+                  borderColor: isSelected
+                    ? SCREEN_THEME.accentStroke
+                    : SCREEN_THEME.border,
+                  backgroundColor: isSelected
+                    ? SCREEN_THEME.surfaceAlt
+                    : SCREEN_THEME.surface,
+                  shadowColor: SCREEN_THEME.accent,
+                  shadowOpacity: isSelected ? 0.22 : 0,
+                  shadowRadius: 18,
+                  shadowOffset: { width: 0, height: 8 },
+                  elevation: isSelected ? 6 : 0,
+                  opacity: pressed ? 0.94 : 1,
+                })}
+              >
+                <View
+                  style={{
+                    borderRadius: 24,
+                    paddingHorizontal: 18,
+                    paddingVertical: 18,
+                  }}
                 >
-                  <View className="flex-row items-center">
+                  <View style={{ flexDirection: "row", alignItems: "center" }}>
                     <View
-                      className={`rounded-3xl p-4 ${
-                        isSelected
-                          ? "bg-teal-100"
-                          : "bg-slate-100"
-                      }`}
+                      style={{
+                        width: 62,
+                        height: 62,
+                        borderRadius: 20,
+                        backgroundColor: isSelected
+                          ? "rgba(16,185,129,0.14)"
+                          : SCREEN_THEME.background,
+                        borderWidth: 1,
+                        borderColor: isSelected
+                          ? "rgba(16,185,129,0.28)"
+                          : SCREEN_THEME.border,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginRight: 16,
+                      }}
                     >
                       <Icon
-                        color={isSelected ? "#0f766e" : "#94a3b8"}
-                        size={26}
-                        strokeWidth={1.8}
+                        color={isSelected ? SCREEN_THEME.accent : SCREEN_THEME.secondaryText}
+                        size={24}
+                        strokeWidth={1.5}
                       />
                     </View>
 
-                    <View className="ml-4 flex-1">
+                    <View style={{ flex: 1, paddingRight: 12 }}>
                       <Text
-                        className={`text-lg font-semibold ${
-                          isSelected ? "text-teal-900" : "text-slate-800"
-                        }`}
+                        style={{
+                          color: SCREEN_THEME.primaryText,
+                          fontSize: 18,
+                          fontWeight: "600",
+                          lineHeight: 23,
+                          marginBottom: 5,
+                        }}
                       >
                         {getLocalizedText(option.title, locale)}
                       </Text>
-                      <Text className="mt-1 text-sm font-medium text-slate-500">
+                      <Text
+                        style={{
+                          color: SCREEN_THEME.secondaryText,
+                          fontSize: 13,
+                          lineHeight: 19,
+                        }}
+                      >
                         {getLocalizedText(option.description, locale)}
                       </Text>
                     </View>
 
-                    <View className="ml-3">
+                    <View
+                      style={{
+                        width: 28,
+                        height: 28,
+                        borderRadius: 999,
+                        borderWidth: 1.5,
+                        borderColor: isSelected
+                          ? SCREEN_THEME.accentStroke
+                          : SCREEN_THEME.borderStrong,
+                        backgroundColor: isSelected
+                          ? "rgba(16,185,129,0.12)"
+                          : "transparent",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
                       {isSelected ? (
-                        <CheckCircle2 color="#14b8a6" size={24} />
-                      ) : (
-                        <View className="h-6 w-6 rounded-full border-2 border-slate-200" />
-                      )}
+                        <CheckCircle2
+                          color={SCREEN_THEME.accent}
+                          size={18}
+                          strokeWidth={1.8}
+                        />
+                      ) : null}
                     </View>
                   </View>
-                </BentoCard>
-              );
-            })}
-          </View>
+                </View>
+              </Pressable>
+            );
+          })}
         </View>
 
-        {setupSelection.length > 0 ? (
-          <View className="pb-4 pt-3">
-            <PrimaryButton
-              label={copy.common.generateProgram}
-              onPress={() => navigation.navigate("Analyzing")}
-              variant="dark"
-            />
-          </View>
-        ) : null}
-      </View>
+        <View style={{ paddingTop: 22 }}>
+          <PrimaryButton
+            label={copy.common.generateProgram}
+            onPress={() => navigation.navigate("Analyzing")}
+            variant="teal"
+            disabled={activeSelection.length === 0}
+          />
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

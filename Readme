@@ -1,0 +1,40 @@
+Aquí tienes un **"Master Prompt"** (o Documento de Requisitos del Producto resumido). Puedes usar este texto exacto para alimentar a otras IAs (para generar código, copies o marketing), o como la base de tu presentación (Pitch Deck) para clientes o inversores. 
+
+Lo he estructurado con un tono profesional y técnico, detallando exactamente la visión que hemos construido.
+
+---
+
+### 📋 MASTER PROMPT: Proyecto PostureFlow
+
+**Contexto del Proyecto:**
+Actúa como un Product Manager y Arquitecto de Software experto. Vamos a desarrollar "PostureFlow", una aplicación móvil orientada al "Micro-Wellness" y la ergonomía ocupacional. La app utiliza rutinas de Tai Chi en silla y corrección postural para combatir el sedentarismo, el dolor articular y el estrés mental en entornos de trabajo.
+
+**1. Público Objetivo (Target Audience):**
+* **Usuarios Finales (B2C):** Desarrolladores de software, diseñadores, trabajadores remotos y oficinistas que pasan más de 6 horas diarias frente a una pantalla. Sufren de dolor de cuello, espalda baja, y "burnout" mental.
+* **Clientes Corporativos (B2B):** Departamentos de Recursos Humanos y Salud Ocupacional de empresas tecnológicas, agencias y corporativos (ideal para comenzar validando con empresas locales en Guayaquil antes de escalar). Buscan reducir las bajas médicas por problemas ergonómicos y mejorar la productividad de sus equipos.
+
+**2. Funcionalidades Core (Características Principales):**
+* **Modo Offline-First (Prioridad Máxima):** La aplicación debe ser 100% funcional sin conexión a internet. Los usuarios podrán descargar paquetes de rutinas (videos comprimidos, audios o animaciones Lottie) directamente al almacenamiento local del dispositivo. La sincronización de rachas y estadísticas con la base de datos (Postgres) se hará en segundo plano (background sync) cuando se detecte conexión, garantizando que el usuario pueda usar la app en aviones, zonas sin cobertura o redes de oficina restrictivas.
+* **Micro-Rutinas de Flujo (3 a 5 minutos):** Ejercicios basados en Tai Chi adaptados exclusivamente para hacerse sentado, enfocados en la descompresión de vértebras, lubricación articular y respiración. *Nota de desarrollo: Para diseñar el contenido de estas rutinas y asegurar que la activación muscular sea la correcta, la validación de una entrenadora fitness profesional será clave para darle autoridad médica/deportiva a la app.*
+* **Smart Reminders (Pausas Activas Inteligentes):** Integración con temporizadores tipo Pomodoro. Notificaciones push amigables que sugieren una "pausa de fluidez" después de periodos prolongados de inactividad o tiempo en pantalla.
+* **Posturometría Básica (Opcional/Fase 2):** Uso de la cámara frontal del dispositivo para detectar el nivel de encorvamiento del usuario y sugerir una rutina correctiva específica.
+
+**3. Arquitectura Técnica:**
+* **Frontend:** React Native con Expo (TypeScript) y NativeWind (Tailwind CSS) para una interfaz limpia, modo oscuro nativo y animaciones fluidas.
+* **Backend:** NestJS (TypeScript), manejando la lógica de negocio y la API REST/GraphQL.
+* **Base de Datos y Caché:** PostgreSQL administrado con Prisma ORM. Redis para el manejo de sesiones, caché de usuarios y colas de sincronización offline.
+* **Infraestructura:** Dockerizado para un despliegue rápido y escalable.
+
+**4. Estrategia de Monetización:**
+* **B2C (Freemium):** Descarga gratuita con acceso a rutinas básicas de "Alivio Rápido". Suscripción mensual/anual (ej. $4.99/mes) para acceder a programas completos (ej. "Reto de 21 días de postura", "Recuperación de túnel carpiano", "Modo Avión").
+* **B2B (Licencias Corporativas - El verdadero motor de ingresos):** Venta de paquetes de licencias anuales a empresas. Incluye un panel de administración web (Dashboard) donde RRHH puede ver estadísticas anónimas de uso del equipo (ej. "Tu equipo completó 500 minutos de bienestar esta semana") y gestionar los accesos de los empleados.
+
+**Objetivo de las siguientes interacciones:**
+Con base en esta definición, necesito que me ayudes a estructurar paso a paso los modelos de la base de datos en Prisma, la lógica de sincronización offline en React Native, y el diseño de los endpoints en NestJS.
+
+---
+
+### ¿Cómo usar este texto?
+Simplemente copia y pega todo el bloque de arriba cada vez que abras un chat nuevo en un modelo de IA para programar, o cuando necesites explicarle el proyecto a un colaborador. 
+
+¿Quieres que profundicemos en cómo estructurar el **Modo Offline** a nivel de código con React Native y NestJS? Es la parte más desafiante pero la más valiosa de tu arquitectura.

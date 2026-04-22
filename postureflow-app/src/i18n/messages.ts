@@ -54,10 +54,14 @@ export const messages = {
       step: "Step 1 of 2",
       scanner: "Biomechanical Scanner",
       title: "Register where tension begins.",
-      subtitle: "Tap the front or back figure to mark the areas under tension.",
+      titleLead: "Register where",
+      titleAccent: "tension begins.",
+      subtitle: "Tap any muscle group on the front or back view to mark areas under tension.",
       front: "Front",
       back: "Back",
+      both: "Both",
       selected: "Selected zones",
+      selectedBar: "Zones selected",
       empty: "Select at least one area to continue.",
       helper: "Tap the body to mark the areas that need relief.",
       selectedCount: "zones selected",
@@ -68,8 +72,8 @@ export const messages = {
     },
     setup: {
       step: "Step 2 of 2",
-      title: "What does your current setup look like?",
-      subtitle: "This helps us adapt your stretching angles.",
+      title: "How is your focus level?",
+      subtitle: "This calibrates the breathing and rhythm of your flow.",
     },
     analyzing: {
       steps: [
@@ -148,10 +152,14 @@ export const messages = {
       step: "Paso 1 de 2",
       scanner: "Escaner Biometrico",
       title: "Registra el origen de la tension.",
-      subtitle: "Toca la figura frontal o trasera para marcar las zonas en tension.",
+      titleLead: "Registra donde",
+      titleAccent: "empieza la tension.",
+      subtitle: "Toca cualquier grupo muscular en la vista frontal o trasera para marcar las zonas en tension.",
       front: "Frente",
       back: "Espalda",
+      both: "Ambas",
       selected: "Zonas seleccionadas",
+      selectedBar: "Zonas seleccionadas",
       empty: "Selecciona al menos una zona para continuar.",
       helper: "Toca el cuerpo para marcar las zonas que necesitan alivio.",
       selectedCount: "zonas seleccionadas",
@@ -162,8 +170,8 @@ export const messages = {
     },
     setup: {
       step: "Paso 2 de 2",
-      title: "Cual es tu setup actual?",
-      subtitle: "Esto nos permite adaptar tus angulos de estiramiento.",
+      title: "Como esta tu nivel de enfoque?",
+      subtitle: "Esto calibra la respiracion y el ritmo de tu flujo.",
     },
     analyzing: {
       steps: [
