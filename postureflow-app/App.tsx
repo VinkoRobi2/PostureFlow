@@ -7,6 +7,7 @@ import { LogBox } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { enableScreens } from "react-native-screens";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { zenDarkTheme } from "./src/theme/zen-dark";
 
 enableScreens(false);
 LogBox.ignoreLogs([
@@ -15,10 +16,10 @@ LogBox.ignoreLogs([
 
 export default function App() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: zenDarkTheme.canvas }}>
       <SafeAreaProvider>
         <AppProvider>
-          <StatusBar style="dark" />
+          <StatusBar style="light" />
           <RootNavigator />
         </AppProvider>
       </SafeAreaProvider>

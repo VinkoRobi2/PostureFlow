@@ -16,6 +16,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useMemo, useState } from "react";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
+import { zenDarkTheme } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 import { formatSeconds, getLocalizedText } from "../utils/localize";
 
@@ -88,34 +89,61 @@ export function PlayerScreen({ navigation, route }: Props) {
           flex: 1,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#f4f4f5",
+          backgroundColor: zenDarkTheme.canvas,
         }}
       >
-        <ActivityIndicator color="#0f766e" />
+        <ActivityIndicator color={zenDarkTheme.accent} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f4f4f5" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: zenDarkTheme.canvas }}>
       <View className="flex-1 px-4 py-4">
         <View className="absolute left-6 right-6 top-6 z-20 flex-row items-center justify-between">
           <Pressable
             onPress={() => navigation.goBack()}
-            className="h-10 w-10 items-center justify-center rounded-full bg-white"
+            style={{
+              height: 40,
+              width: 40,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 999,
+              borderWidth: 1,
+              borderColor: zenDarkTheme.border,
+              backgroundColor: zenDarkTheme.surfaceGlass,
+            }}
           >
-            <X color="#475569" size={18} />
+            <X color={zenDarkTheme.textSecondary} size={18} />
           </Pressable>
 
-          <View className="rounded-full bg-white/90 px-4 py-2">
-            <Text className="text-xs font-semibold uppercase tracking-[1px] text-slate-600">
+          <View
+            style={{
+              borderRadius: 999,
+              backgroundColor: zenDarkTheme.surfaceOverlay,
+              paddingHorizontal: 16,
+              paddingVertical: 8,
+              borderWidth: 1,
+              borderColor: zenDarkTheme.border,
+            }}
+          >
+            <Text style={{ fontSize: 12, fontWeight: "600", letterSpacing: 1, textTransform: "uppercase", color: zenDarkTheme.textSecondary }}>
               {`${formatSeconds(currentSeconds)} / ${formatSeconds(totalDurationSeconds)}`}
             </Text>
           </View>
         </View>
 
         <View className="mt-16 flex-1 items-center justify-center">
-          <View className="mb-6 h-[440px] w-full overflow-hidden rounded-[34px] bg-slate-200">
+          <View
+            style={{
+              marginBottom: 24,
+              height: 440,
+              width: "100%",
+              overflow: "hidden",
+              borderRadius: 34,
+              backgroundColor: zenDarkTheme.surface,
+            }}
+          >
             <Image
               source={{ uri: routine.imageUrl }}
               className="h-full w-full"
@@ -123,27 +151,66 @@ export function PlayerScreen({ navigation, route }: Props) {
             />
 
             {!isPlaying ? (
-              <View className="absolute inset-0 items-center justify-center bg-black/20">
+              <View
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: "rgba(2,6,23,0.28)",
+                }}
+              >
                 <Pressable
                   onPress={() => setPlaying(true)}
-                  className="h-20 w-20 items-center justify-center rounded-full bg-white/30"
+                  style={{
+                    height: 80,
+                    width: 80,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: 999,
+                    backgroundColor: zenDarkTheme.whiteSoft,
+                  }}
                 >
-                  <Play color="#ffffff" fill="#ffffff" size={28} />
+                  <Play
+                    color={zenDarkTheme.textPrimary}
+                    fill={zenDarkTheme.textPrimary}
+                    size={28}
+                  />
                 </Pressable>
               </View>
             ) : null}
           </View>
 
-          <View className="absolute bottom-40 left-5 right-5 rounded-[24px] border border-slate-100 bg-white/95 p-4">
+          <View
+            style={{
+              position: "absolute",
+              bottom: 160,
+              left: 20,
+              right: 20,
+              borderRadius: 24,
+              borderWidth: 1,
+              borderColor: zenDarkTheme.border,
+              backgroundColor: zenDarkTheme.surfaceOverlay,
+              padding: 16,
+            }}
+          >
             <View className="flex-row items-start">
-              <View className="mr-3 mt-1 rounded-full bg-teal-100 p-2">
-                <Info color="#0f766e" size={16} />
+              <View
+                style={{
+                  marginRight: 12,
+                  marginTop: 4,
+                  borderRadius: 999,
+                  backgroundColor: zenDarkTheme.accentSoft,
+                  padding: 8,
+                }}
+              >
+                <Info color={zenDarkTheme.accent} size={16} />
               </View>
               <View className="flex-1">
-                <Text className="text-xs font-semibold uppercase tracking-[1px] text-slate-800">
+                <Text style={{ fontSize: 12, fontWeight: "600", letterSpacing: 1, textTransform: "uppercase", color: zenDarkTheme.textPrimary }}>
                   {copy.player.position}
                 </Text>
-                <Text className="mt-1 text-sm font-medium leading-5 text-slate-600">
+                <Text style={{ marginTop: 4, fontSize: 14, fontWeight: "500", lineHeight: 20, color: zenDarkTheme.textSecondary }}>
                   {getLocalizedText(routine.tipBody, locale)}
                 </Text>
               </View>
@@ -151,36 +218,65 @@ export function PlayerScreen({ navigation, route }: Props) {
           </View>
         </View>
 
-        <View className="rounded-[32px] border border-slate-100 bg-white p-6">
+        <View
+          style={{
+            borderRadius: 32,
+            borderWidth: 1,
+            borderColor: zenDarkTheme.border,
+            backgroundColor: zenDarkTheme.surfaceGlass,
+            padding: 24,
+          }}
+        >
           <View className="mb-4 flex-row items-center justify-between">
-            <Text className="text-xl font-semibold tracking-tight text-slate-800">
+            <Text style={{ fontSize: 20, fontWeight: "600", letterSpacing: -0.4, color: zenDarkTheme.textPrimary }}>
               {getLocalizedText(routine.title, locale)}
             </Text>
-            <Text className="text-sm font-medium text-slate-400">
+            <Text style={{ fontSize: 14, fontWeight: "500", color: zenDarkTheme.textTertiary }}>
               {getLocalizedText(routine.repetitionsLabel, locale)}
             </Text>
           </View>
 
-          <View className="mb-6 h-2 overflow-hidden rounded-full bg-slate-100">
+          <View
+            style={{
+              marginBottom: 24,
+              height: 8,
+              overflow: "hidden",
+              borderRadius: 999,
+              backgroundColor: zenDarkTheme.surface,
+            }}
+          >
             <View
-              className="h-full rounded-full bg-teal-500"
-              style={{ width: `${progress}%` }}
+              style={{
+                height: "100%",
+                borderRadius: 999,
+                backgroundColor: zenDarkTheme.accent,
+                width: `${progress}%`,
+              }}
             />
           </View>
 
           <View className="flex-row items-center justify-center">
             <Pressable className="mr-12">
-              <RotateCcw color="#94a3b8" size={22} />
+              <RotateCcw color={zenDarkTheme.textSecondary} size={22} />
             </Pressable>
 
             <Pressable
               onPress={() => setPlaying((current) => !current)}
-              className="h-16 w-16 items-center justify-center rounded-full bg-slate-900"
+              style={{
+                height: 64,
+                width: 64,
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 999,
+                backgroundColor: zenDarkTheme.accent,
+                borderWidth: 1,
+                borderColor: "rgba(52,211,153,0.26)",
+              }}
             >
               {isPlaying ? (
-                <Pause color="#ffffff" fill="#ffffff" size={24} />
+                <Pause color={zenDarkTheme.textInverse} fill={zenDarkTheme.textInverse} size={24} />
               ) : (
-                <Play color="#ffffff" fill="#ffffff" size={24} />
+                <Play color={zenDarkTheme.textInverse} fill={zenDarkTheme.textInverse} size={24} />
               )}
             </Pressable>
 
@@ -192,7 +288,7 @@ export function PlayerScreen({ navigation, route }: Props) {
               }}
               className="ml-12"
             >
-              <Text className="text-sm font-semibold uppercase tracking-[1px] text-slate-500">
+              <Text style={{ fontSize: 14, fontWeight: "600", letterSpacing: 1, textTransform: "uppercase", color: zenDarkTheme.textTertiary }}>
                 {copy.common.skip}
               </Text>
             </Pressable>

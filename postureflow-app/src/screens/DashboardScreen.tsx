@@ -18,20 +18,21 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { LanguageToggle } from "../components/LanguageToggle";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
+import { zenDarkTheme } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 import { getLocalizedText } from "../utils/localize";
 
 type Props = AppScreenProps<"Dashboard">;
 
 const DASHBOARD_THEME = {
-  background: "#000000",
-  surface: "#09090B",
-  surfaceAlt: "#18181B",
-  border: "#27272A",
-  accent: "#10B981",
-  primaryText: "#FFFFFF",
-  secondaryText: "#A1A1AA",
-  tertiaryText: "#52525B",
+  background: zenDarkTheme.canvas,
+  surface: zenDarkTheme.surfaceGlass,
+  surfaceAlt: zenDarkTheme.surface,
+  border: zenDarkTheme.border,
+  accent: zenDarkTheme.accent,
+  primaryText: zenDarkTheme.textPrimary,
+  secondaryText: zenDarkTheme.textSecondary,
+  tertiaryText: zenDarkTheme.textTertiary,
   yellow: "#EAB308",
 } as const;
 
@@ -167,7 +168,7 @@ export function DashboardScreen({ navigation }: Props) {
           <View
             style={[
               StyleSheet.absoluteFillObject,
-              { backgroundColor: "rgba(0,0,0,0.58)" },
+              { backgroundColor: zenDarkTheme.surfaceOverlay },
             ]}
           />
 
@@ -278,7 +279,7 @@ export function DashboardScreen({ navigation }: Props) {
                 />
                 <Text
                   style={{
-                    color: DASHBOARD_THEME.background,
+                  color: DASHBOARD_THEME.background,
                     fontSize: 13,
                     fontWeight: "800",
                     marginLeft: 8,

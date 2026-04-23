@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Svg, { Circle, Line, Path, Rect } from "react-native-svg";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
+import { zenAmbientGlow, zenDarkTheme } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 
 type Props = AppScreenProps<"Splash">;
@@ -91,7 +92,7 @@ export function SplashScreen({ navigation }: Props) {
   }, [entryRoute, isHydrated, navigation]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: zenDarkTheme.canvas }}>
       <StatusBar style="light" />
 
       <View style={{ flex: 1, paddingHorizontal: 32 }}>
@@ -127,8 +128,9 @@ export function SplashScreen({ navigation }: Props) {
                   width: 110,
                   height: 110,
                   borderRadius: 999,
-                  backgroundColor: "#10B981",
-                  opacity: 0.1,
+                  backgroundColor: zenDarkTheme.accent,
+                  opacity: 0.08,
+                  ...zenAmbientGlow(0.08, 24),
                   transform: [
                     {
                       scale: pulse.interpolate({
@@ -145,7 +147,7 @@ export function SplashScreen({ navigation }: Props) {
                   cx="56"
                   cy="20"
                   r="10"
-                  stroke="#10B981"
+                  stroke={zenDarkTheme.accent}
                   strokeWidth="1.6"
                   fill="none"
                 />
@@ -154,7 +156,7 @@ export function SplashScreen({ navigation }: Props) {
                   y1="32"
                   x2="56"
                   y2="76"
-                  stroke="#10B981"
+                  stroke={zenDarkTheme.accent}
                   strokeWidth="1.6"
                   strokeLinecap="round"
                 />
@@ -163,17 +165,17 @@ export function SplashScreen({ navigation }: Props) {
                   y1="42"
                   x2="76"
                   y2="42"
-                  stroke="#10B981"
+                  stroke={zenDarkTheme.accent}
                   strokeWidth="1.6"
                   strokeLinecap="round"
                 />
-                <Rect x="51" y="40" width="10" height="5" rx="2.5" fill="#10B981" />
-                <Rect x="51" y="49" width="10" height="5" rx="2.5" fill="#10B981" />
-                <Rect x="51" y="58" width="10" height="5" rx="2.5" fill="#10B981" />
-                <Rect x="51" y="67" width="10" height="5" rx="2.5" fill="#10B981" />
+                <Rect x="51" y="40" width="10" height="5" rx="2.5" fill={zenDarkTheme.accent} />
+                <Rect x="51" y="49" width="10" height="5" rx="2.5" fill={zenDarkTheme.accent} />
+                <Rect x="51" y="58" width="10" height="5" rx="2.5" fill={zenDarkTheme.accent} />
+                <Rect x="51" y="67" width="10" height="5" rx="2.5" fill={zenDarkTheme.accent} />
                 <Path
                   d="M56 76 L82 76 L82 108"
-                  stroke="#10B981"
+                  stroke={zenDarkTheme.accent}
                   strokeWidth="1.6"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -181,7 +183,7 @@ export function SplashScreen({ navigation }: Props) {
                 />
                 <Path
                   d="M56 76 L46 108 L78 108"
-                  stroke="#10B981"
+                  stroke={zenDarkTheme.accent}
                   strokeWidth="1.6"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -192,7 +194,7 @@ export function SplashScreen({ navigation }: Props) {
                   y1="116"
                   x2="88"
                   y2="116"
-                  stroke="#27272A"
+                  stroke={zenDarkTheme.borderMuted}
                   strokeWidth="1.2"
                   strokeLinecap="round"
                 />
@@ -201,7 +203,7 @@ export function SplashScreen({ navigation }: Props) {
 
             <Text
               style={{
-                color: "#FFFFFF",
+                color: zenDarkTheme.textPrimary,
                 fontSize: 30,
                 fontWeight: "700",
                 letterSpacing: 0.9,
@@ -232,9 +234,9 @@ export function SplashScreen({ navigation }: Props) {
                 height: 14,
                 borderRadius: 999,
                 borderWidth: 1,
-                borderColor: "#27272A",
-                borderTopColor: "#10B981",
-                borderRightColor: "#10B981",
+                borderColor: zenDarkTheme.borderMuted,
+                borderTopColor: zenDarkTheme.accent,
+                borderRightColor: zenDarkTheme.accent,
                 marginRight: 10,
                 transform: [
                   {
@@ -248,7 +250,7 @@ export function SplashScreen({ navigation }: Props) {
             />
             <Text
               style={{
-                color: "#A1A1AA",
+                color: zenDarkTheme.textSecondary,
                 fontSize: 12,
                 fontWeight: "500",
                 letterSpacing: 0.6,

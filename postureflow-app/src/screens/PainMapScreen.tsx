@@ -4,6 +4,7 @@ import { BiomechanicalScanner } from "../components/BiomechanicalScanner";
 import { LanguageToggle } from "../components/LanguageToggle";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
+import { zenDarkTheme } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 
 type Props = AppScreenProps<"PainMap">;
@@ -25,10 +26,16 @@ export function PainMapScreen({ navigation }: Props) {
           flex: 1,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#000000",
+          backgroundColor: zenDarkTheme.canvas,
         }}
       >
-        <Text className="text-base font-medium text-zinc-400">
+        <Text
+          style={{
+            color: zenDarkTheme.textSecondary,
+            fontSize: 16,
+            fontWeight: "500",
+          }}
+        >
           {copy.common.loading}
         </Text>
       </SafeAreaView>
@@ -36,7 +43,7 @@ export function PainMapScreen({ navigation }: Props) {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: zenDarkTheme.canvas }}>
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"

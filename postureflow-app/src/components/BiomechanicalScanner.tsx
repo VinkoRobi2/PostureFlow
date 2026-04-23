@@ -6,6 +6,7 @@ import { Activity, ChevronRight } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { type DimensionValue, Pressable, Text, View } from "react-native";
 import { messages } from "../i18n/messages";
+import { zenAmbientGlow, zenDarkTheme } from "../theme/zen-dark";
 import type { LocaleCode, PainRegion } from "../types/app";
 import { getLocalizedText } from "../utils/localize";
 
@@ -29,17 +30,17 @@ type BiomechanicalScannerProps = {
 };
 
 const SCANNER_THEME = {
-  background: "#000000",
-  surface: "#14161B",
-  surfaceAlt: "#0C0F13",
-  panel: "#11151B",
-  border: "#242A33",
-  borderStrong: "#303744",
-  accent: "#10B981",
-  accentStroke: "#34D399",
-  primaryText: "#FFFFFF",
-  secondaryText: "#A1A1AA",
-  tertiaryText: "#6B7280",
+  background: zenDarkTheme.canvas,
+  surface: zenDarkTheme.surfaceGlass,
+  surfaceAlt: zenDarkTheme.cardMuted,
+  panel: zenDarkTheme.surface,
+  border: zenDarkTheme.border,
+  borderStrong: zenDarkTheme.borderMuted,
+  accent: zenDarkTheme.accent,
+  accentStroke: zenDarkTheme.accentStrong,
+  primaryText: zenDarkTheme.textPrimary,
+  secondaryText: zenDarkTheme.textSecondary,
+  tertiaryText: zenDarkTheme.textTertiary,
   figureIdle: "#262B33",
   figureStroke: "#343A45",
 } as const;
@@ -247,9 +248,9 @@ function BodyHotspots({
               height: hotspot.height,
               borderRadius: 999,
               backgroundColor: isSelected
-                ? "rgba(16,185,129,0.18)"
+                ? zenDarkTheme.accentSoft
                 : pressed
-                  ? "rgba(36,42,51,0.55)"
+                  ? "rgba(15,23,42,0.42)"
                   : "transparent",
               borderWidth: isSelected ? 1 : 0,
               borderColor: isSelected ? SCANNER_THEME.accent : "transparent",
@@ -352,7 +353,7 @@ export function BiomechanicalScanner({
   );
 
   const selectedSummary = useMemo(
-    () => selectedLabels.map((item) => item.label).join(" • "),
+    () => selectedLabels.map((item) => item.label).join(" | "),
     [selectedLabels],
   );
 
@@ -512,8 +513,8 @@ export function BiomechanicalScanner({
                   borderColor: active
                     ? "rgba(16,185,129,0.55)"
                     : "transparent",
-                  backgroundColor: active
-                    ? "rgba(16,185,129,0.16)"
+          backgroundColor: active
+                    ? zenDarkTheme.accentSoft
                     : "transparent",
                   paddingVertical: 8,
                 }}
@@ -637,10 +638,7 @@ export function BiomechanicalScanner({
             opacity: selectedParts.length === 0 ? 0.45 : pressed ? 0.92 : 1,
             paddingHorizontal: 16,
             shadowColor: SCANNER_THEME.accent,
-            shadowOpacity: 0.34,
-            shadowRadius: 18,
-            shadowOffset: { width: 0, height: 10 },
-            elevation: 7,
+            ...zenAmbientGlow(0.16, 22),
           })}
         >
           <Text
@@ -661,7 +659,7 @@ export function BiomechanicalScanner({
               borderRadius: 999,
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "rgba(255,255,255,0.18)",
+              backgroundColor: zenDarkTheme.whiteSoft,
             }}
           >
             <ChevronRight

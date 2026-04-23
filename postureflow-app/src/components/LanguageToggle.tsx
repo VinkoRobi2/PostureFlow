@@ -1,5 +1,6 @@
 import { Languages } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
+import { zenDarkTheme } from "../theme/zen-dark";
 import { LocaleCode } from "../types/app";
 
 type LanguageToggleProps = {
@@ -18,27 +19,46 @@ export function LanguageToggle({
   return (
     <Pressable
       onPress={onToggle}
-      className={`flex-row items-center rounded-full px-3 py-2 ${
-        isDark
-          ? "border border-zinc-800 bg-zinc-950"
-          : "border border-slate-200 bg-white"
-      }`}
-      style={({ pressed }) => (pressed ? { opacity: 0.85 } : null)}
+      style={({ pressed }) => ({
+        flexDirection: "row",
+        alignItems: "center",
+        borderRadius: 999,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        borderWidth: 1,
+        borderColor: isDark ? zenDarkTheme.border : zenDarkTheme.borderMuted,
+        backgroundColor: isDark
+          ? zenDarkTheme.surfaceGlass
+          : zenDarkTheme.textPrimary,
+        opacity: pressed ? 0.85 : 1,
+      })}
     >
-      <Languages color={isDark ? "#A1A1AA" : "#0f766e"} size={16} />
-      <View className="ml-2">
+      <Languages
+        color={isDark ? zenDarkTheme.textSecondary : zenDarkTheme.accent}
+        size={16}
+      />
+      <View style={{ marginLeft: 8 }}>
         <Text
-          className={`text-[10px] font-semibold uppercase tracking-[1px] ${
-            isDark ? "text-zinc-500" : "text-slate-400"
-          }`}
+          style={{
+            fontSize: 10,
+            fontWeight: "600",
+            letterSpacing: 1,
+            textTransform: "uppercase",
+            color: isDark ? zenDarkTheme.textTertiary : zenDarkTheme.textSecondary,
+          }}
         >
           {locale === "en" ? "EN" : "ES"}
         </Text>
       </View>
       <Text
-        className={`ml-2 text-xs font-semibold uppercase tracking-[1px] ${
-          isDark ? "text-emerald-400" : "text-teal-700"
-        }`}
+        style={{
+          marginLeft: 8,
+          fontSize: 12,
+          fontWeight: "600",
+          letterSpacing: 1,
+          textTransform: "uppercase",
+          color: isDark ? zenDarkTheme.accentStrong : zenDarkTheme.accent,
+        }}
       >
         {locale === "en" ? "ES" : "EN"}
       </Text>

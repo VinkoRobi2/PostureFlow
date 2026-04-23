@@ -3,6 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
+import { zenDarkTheme } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 
 type Props = AppScreenProps<"Analyzing">;
@@ -48,22 +49,54 @@ export function AnalyzingScreen({ navigation }: Props) {
   }, [navigation, steps.length, submitOnboarding]);
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: zenDarkTheme.canvas }}>
       <View className="flex-1 items-center justify-center px-8">
-        <View className="mb-8 h-32 w-32 items-center justify-center rounded-full border border-teal-100 bg-teal-50">
-          <ActivityIndicator color="#0f766e" size="large" />
+        <View
+          style={{
+            marginBottom: 32,
+            height: 128,
+            width: 128,
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: 999,
+            borderWidth: 1,
+            borderColor: zenDarkTheme.border,
+            backgroundColor: zenDarkTheme.surfaceGlass,
+          }}
+        >
+          <ActivityIndicator color={zenDarkTheme.accent} size="large" />
         </View>
 
         <View className="h-14 items-center justify-center">
-          <Text className="text-center text-lg font-light text-slate-600">
+          <Text
+            style={{
+              textAlign: "center",
+              fontSize: 18,
+              fontWeight: "300",
+              color: zenDarkTheme.textSecondary,
+            }}
+          >
             {steps[stepIndex]}
           </Text>
         </View>
 
-        <View className="mt-8 h-2 w-56 overflow-hidden rounded-full bg-slate-100">
+        <View
+          style={{
+            marginTop: 32,
+            height: 8,
+            width: 224,
+            overflow: "hidden",
+            borderRadius: 999,
+            backgroundColor: zenDarkTheme.surface,
+          }}
+        >
           <View
-            className="h-full rounded-full bg-teal-500"
-            style={{ width: `${((stepIndex + 1) / steps.length) * 100}%` }}
+            style={{
+              height: "100%",
+              borderRadius: 999,
+              backgroundColor: zenDarkTheme.accent,
+              width: `${((stepIndex + 1) / steps.length) * 100}%`,
+            }}
           />
         </View>
       </View>

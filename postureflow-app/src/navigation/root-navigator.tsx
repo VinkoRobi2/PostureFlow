@@ -11,6 +11,7 @@ import { SetupScreen } from "../screens/SetupScreen";
 import { SplashScreen } from "../screens/SplashScreen";
 import { SuccessScreen } from "../screens/SuccessScreen";
 import { VerifyEmailScreen } from "../screens/VerifyEmailScreen";
+import { zenDarkTheme } from "../theme/zen-dark";
 import {
   AppNavigation,
   AppRoute,
@@ -61,7 +62,7 @@ export function RootNavigator() {
   const currentRoute = stack[stack.length - 1];
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#f8fafc" }}>
+    <View style={{ flex: 1, backgroundColor: zenDarkTheme.canvas }}>
       {renderCurrentRoute(currentRoute, navigation)}
     </View>
   );

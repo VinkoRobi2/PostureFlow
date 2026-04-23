@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import { BentoCard } from "../components/BentoCard";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
+import { zenDarkTheme } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 import { getLocalizedText } from "../utils/localize";
 
@@ -40,18 +41,17 @@ export function LibraryScreen({ navigation }: Props) {
           flex: 1,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "#f8fafc",
+          backgroundColor: zenDarkTheme.canvas,
         }}
       >
-        <ActivityIndicator color="#0f766e" />
+        <ActivityIndicator color={zenDarkTheme.accent} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#f8fafc" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: zenDarkTheme.canvas }}>
       <ScrollView
-        className="flex-1"
         contentContainerStyle={{
           paddingHorizontal: 24,
           paddingTop: 18,
@@ -61,45 +61,121 @@ export function LibraryScreen({ navigation }: Props) {
           width: "100%",
         }}
       >
-        <View className="mb-8 flex-row items-center">
+        <View
+          style={{
+            marginBottom: 32,
+            flexDirection: "row",
+            alignItems: "center",
+          }}
+        >
           <Pressable
             onPress={() => navigation.goBack()}
-            className="mr-4 h-10 w-10 items-center justify-center rounded-full bg-white"
+            style={{
+              marginRight: 16,
+              height: 40,
+              width: 40,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 999,
+              borderWidth: 1,
+              borderColor: zenDarkTheme.border,
+              backgroundColor: zenDarkTheme.surfaceGlass,
+            }}
           >
-            <ChevronLeft color="#475569" size={20} />
+            <ChevronLeft color={zenDarkTheme.textSecondary} size={20} />
           </Pressable>
 
-          <Text className="flex-1 text-3xl font-semibold tracking-tight text-slate-800">
+          <Text
+            style={{
+              flex: 1,
+              fontSize: 30,
+              fontWeight: "600",
+              letterSpacing: -0.6,
+              color: zenDarkTheme.textPrimary,
+            }}
+          >
             {copy.library.title}
           </Text>
 
-          <View className="h-10 w-10 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50">
-            <CloudOff color="#059669" size={18} />
+          <View
+            style={{
+              height: 40,
+              width: 40,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 999,
+              borderWidth: 1,
+              borderColor: zenDarkTheme.border,
+              backgroundColor: zenDarkTheme.surfaceGlass,
+            }}
+          >
+            <CloudOff color={zenDarkTheme.accent} size={18} />
           </View>
         </View>
 
         <BentoCard className="mb-8 p-4">
-          <View className="flex-row items-center">
-            <View className="mr-4 h-10 w-10 items-center justify-center rounded-2xl bg-slate-50">
-              <HardDrive color="#94a3b8" size={20} />
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View
+              style={{
+                marginRight: 16,
+                height: 40,
+                width: 40,
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 16,
+                backgroundColor: zenDarkTheme.input,
+              }}
+            >
+              <HardDrive color={zenDarkTheme.textSecondary} size={20} />
             </View>
 
-            <View className="flex-1">
-              <View className="mb-2 flex-row items-center justify-between">
-                <Text className="text-[10px] font-bold uppercase tracking-[1px] text-slate-500">
+            <View style={{ flex: 1 }}>
+              <View
+                style={{
+                  marginBottom: 8,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 10,
+                    fontWeight: "700",
+                    letterSpacing: 1,
+                    textTransform: "uppercase",
+                    color: zenDarkTheme.textTertiary,
+                  }}
+                >
                   {copy.common.localStorage}
                 </Text>
-                <Text className="text-xs font-semibold text-slate-800">
+                <Text
+                  style={{
+                    fontSize: 12,
+                    fontWeight: "600",
+                    color: zenDarkTheme.textPrimary,
+                  }}
+                >
                   {`${library.storage.usedMb} MB / ${library.storage.totalMb} MB`}
                 </Text>
               </View>
-              <View className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+
+              <View
+                style={{
+                  height: 6,
+                  overflow: "hidden",
+                  borderRadius: 999,
+                  backgroundColor: zenDarkTheme.surface,
+                }}
+              >
                 <View
-                  className="h-full rounded-full bg-teal-500"
                   style={{
+                    height: "100%",
                     width: `${
                       (library.storage.usedMb / library.storage.totalMb) * 100
                     }%`,
+                    borderRadius: 999,
+                    backgroundColor: zenDarkTheme.accent,
                   }}
                 />
               </View>
@@ -107,33 +183,65 @@ export function LibraryScreen({ navigation }: Props) {
           </View>
         </BentoCard>
 
-        <View className="gap-4">
+        <View style={{ gap: 16 }}>
           {library.routines.map((routine) => {
             const isDownloading = downloadingId === routine.id;
 
             return (
               <BentoCard key={routine.id} className="h-28 p-4">
-                <View className="flex-row items-center">
-                  <View className="h-20 w-20 overflow-hidden rounded-3xl">
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <View
+                    style={{
+                      height: 80,
+                      width: 80,
+                      overflow: "hidden",
+                      borderRadius: 24,
+                    }}
+                  >
                     <Image
                       source={{ uri: routine.imageUrl }}
-                      className="h-full w-full"
+                      style={{ height: "100%", width: "100%" }}
                       resizeMode="cover"
                     />
                   </View>
 
-                  <View className="ml-4 flex-1">
-                    <Text className="text-base font-semibold leading-5 text-slate-800">
+                  <View style={{ marginLeft: 16, flex: 1 }}>
+                    <Text
+                      style={{
+                        color: zenDarkTheme.textPrimary,
+                        fontSize: 16,
+                        fontWeight: "600",
+                        lineHeight: 20,
+                      }}
+                    >
                       {getLocalizedText(routine.title, locale)}
                     </Text>
-                    <Text className="mt-1 text-xs font-medium text-slate-400">
-                      {`${getLocalizedText(routine.durationLabel, locale)} • ${routine.sizeLabel}`}
+                    <Text
+                      style={{
+                        marginTop: 4,
+                        color: zenDarkTheme.textSecondary,
+                        fontSize: 12,
+                        fontWeight: "500",
+                      }}
+                    >
+                      {`${getLocalizedText(routine.durationLabel, locale)} | ${routine.sizeLabel}`}
                     </Text>
                   </View>
 
                   {routine.downloaded ? (
-                    <View className="h-10 w-10 items-center justify-center rounded-full border border-emerald-100 bg-emerald-50">
-                      <CheckCircle2 color="#10b981" size={20} />
+                    <View
+                      style={{
+                        height: 40,
+                        width: 40,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderRadius: 999,
+                        borderWidth: 1,
+                        borderColor: zenDarkTheme.border,
+                        backgroundColor: zenDarkTheme.accentSoft,
+                      }}
+                    >
+                      <CheckCircle2 color={zenDarkTheme.accent} size={20} />
                     </View>
                   ) : (
                     <Pressable
@@ -142,12 +250,19 @@ export function LibraryScreen({ navigation }: Props) {
                         await downloadRoutine(routine.id);
                         setDownloadingId(null);
                       }}
-                      className="h-10 w-10 items-center justify-center rounded-full bg-slate-50"
+                      style={{
+                        height: 40,
+                        width: 40,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        borderRadius: 999,
+                        backgroundColor: zenDarkTheme.input,
+                      }}
                     >
                       {isDownloading ? (
-                        <Loader2 color="#14b8a6" size={18} />
+                        <Loader2 color={zenDarkTheme.accentStrong} size={18} />
                       ) : (
-                        <Download color="#94a3b8" size={18} />
+                        <Download color={zenDarkTheme.textSecondary} size={18} />
                       )}
                     </Pressable>
                   )}

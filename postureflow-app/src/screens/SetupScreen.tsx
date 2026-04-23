@@ -10,6 +10,7 @@ import { LanguageToggle } from "../components/LanguageToggle";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
+import { zenDarkTheme } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 import { getLocalizedText } from "../utils/localize";
 
@@ -22,16 +23,16 @@ const iconMap = {
 } as const;
 
 const SCREEN_THEME = {
-  background: "#000000",
-  surface: "#11151B",
-  surfaceAlt: "#14161B",
-  border: "#242A33",
-  borderStrong: "#303744",
-  accent: "#10B981",
-  accentStroke: "#34D399",
-  primaryText: "#E4E4E7",
-  secondaryText: "#A1A1AA",
-  tertiaryText: "#6B7280",
+  background: zenDarkTheme.canvas,
+  surface: zenDarkTheme.surfaceGlass,
+  surfaceAlt: zenDarkTheme.surface,
+  border: zenDarkTheme.border,
+  borderStrong: zenDarkTheme.borderMuted,
+  accent: zenDarkTheme.accent,
+  accentStroke: zenDarkTheme.accentStrong,
+  primaryText: zenDarkTheme.textPrimary,
+  secondaryText: zenDarkTheme.textSecondary,
+  tertiaryText: zenDarkTheme.textTertiary,
 } as const;
 
 export function SetupScreen({ navigation }: Props) {
@@ -198,11 +199,11 @@ export function SetupScreen({ navigation }: Props) {
                         height: 62,
                         borderRadius: 20,
                         backgroundColor: isSelected
-                          ? "rgba(16,185,129,0.14)"
-                          : SCREEN_THEME.background,
+                          ? zenDarkTheme.accentSoft
+                          : zenDarkTheme.cardMuted,
                         borderWidth: 1,
                         borderColor: isSelected
-                          ? "rgba(16,185,129,0.28)"
+                          ? "rgba(52,211,153,0.22)"
                           : SCREEN_THEME.border,
                         alignItems: "center",
                         justifyContent: "center",

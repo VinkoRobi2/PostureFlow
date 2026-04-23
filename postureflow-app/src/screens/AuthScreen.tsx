@@ -15,6 +15,7 @@ import { LanguageToggle } from "../components/LanguageToggle";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
+import { zenDarkTheme } from "../theme/zen-dark";
 import type { AppScreenProps, AuthFormMode } from "../types/app";
 
 type Props = AppScreenProps<"Auth">;
@@ -119,7 +120,7 @@ export function AuthScreen({ navigation, route }: Props) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: zenDarkTheme.canvas }}>
       <StatusBar style="light" />
 
       <KeyboardDismissView>
@@ -137,8 +138,25 @@ export function AuthScreen({ navigation, route }: Props) {
           keyboardDismissMode="interactive"
         >
           <View className="mb-8 flex-row items-center justify-between">
-            <View className="rounded-full border border-zinc-800 bg-zinc-950 px-3 py-1">
-              <Text className="text-[10px] font-semibold uppercase tracking-[1.5px] text-emerald-400">
+            <View
+              style={{
+                borderRadius: 999,
+                borderWidth: 1,
+                borderColor: zenDarkTheme.border,
+                backgroundColor: zenDarkTheme.surfaceGlass,
+                paddingHorizontal: 12,
+                paddingVertical: 4,
+              }}
+            >
+              <Text
+                style={{
+                  color: zenDarkTheme.accentStrong,
+                  fontSize: 10,
+                  fontWeight: "600",
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                }}
+              >
                 {copy.auth.eyebrow}
               </Text>
             </View>
@@ -147,15 +165,25 @@ export function AuthScreen({ navigation, route }: Props) {
           </View>
 
           <View className="mb-8">
-            <Text className="text-3xl font-semibold leading-10 text-white">
+            <Text style={{ fontSize: 30, fontWeight: "600", lineHeight: 40, color: zenDarkTheme.textPrimary }}>
               {copy.auth.title}
             </Text>
-            <Text className="mt-3 text-sm leading-6 text-zinc-400">
+            <Text style={{ marginTop: 12, fontSize: 14, lineHeight: 24, color: zenDarkTheme.textSecondary }}>
               {copy.auth.subtitle}
             </Text>
           </View>
 
-          <View className="mb-6 flex-row rounded-full border border-zinc-800 bg-zinc-950 p-1">
+          <View
+            style={{
+              marginBottom: 24,
+              flexDirection: "row",
+              borderRadius: 999,
+              borderWidth: 1,
+              borderColor: zenDarkTheme.border,
+              backgroundColor: zenDarkTheme.surfaceGlass,
+              padding: 4,
+            }}
+          >
             {(["login", "register"] as const).map((item) => {
               const active = item === mode;
               return (
@@ -165,14 +193,25 @@ export function AuthScreen({ navigation, route }: Props) {
                     setMode(item);
                     setError(null);
                   }}
-                  className={`flex-1 rounded-full px-4 py-3 ${
-                    active ? "bg-emerald-500" : ""
-                  }`}
+                  style={{
+                    flex: 1,
+                    borderRadius: 999,
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                    backgroundColor: active ? zenDarkTheme.accent : "transparent",
+                  }}
                 >
                   <Text
-                    className={`text-center text-xs font-semibold uppercase tracking-[1px] ${
-                      active ? "text-black" : "text-zinc-400"
-                    }`}
+                    style={{
+                      textAlign: "center",
+                      fontSize: 12,
+                      fontWeight: "600",
+                      letterSpacing: 1,
+                      textTransform: "uppercase",
+                      color: active
+                        ? zenDarkTheme.textInverse
+                        : zenDarkTheme.textSecondary,
+                    }}
                   >
                     {item === "login" ? copy.auth.loginTab : copy.auth.registerTab}
                   </Text>
@@ -181,7 +220,16 @@ export function AuthScreen({ navigation, route }: Props) {
             })}
           </View>
 
-          <View className="rounded-[28px] border border-zinc-800 bg-zinc-950 px-5 py-5">
+          <View
+            style={{
+              borderRadius: 28,
+              borderWidth: 1,
+              borderColor: zenDarkTheme.border,
+              backgroundColor: zenDarkTheme.surfaceGlass,
+              paddingHorizontal: 20,
+              paddingVertical: 20,
+            }}
+          >
             {isRegister ? (
               <Field
                 icon={<UserRound color="#10B981" size={16} />}
@@ -233,8 +281,24 @@ export function AuthScreen({ navigation, route }: Props) {
             ) : null}
 
             {!isOnline ? (
-              <View className="mb-4 rounded-2xl border border-zinc-800 bg-black px-4 py-3">
-                <Text className="text-sm leading-5 text-zinc-400">
+              <View
+                style={{
+                  marginBottom: 16,
+                  borderRadius: 16,
+                  borderWidth: 1,
+                  borderColor: zenDarkTheme.border,
+                  backgroundColor: zenDarkTheme.input,
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    lineHeight: 20,
+                    color: zenDarkTheme.textSecondary,
+                  }}
+                >
                   {copy.auth.offlineKnownUser}
                 </Text>
               </View>
@@ -247,33 +311,79 @@ export function AuthScreen({ navigation, route }: Props) {
             />
 
             <View className="my-5 flex-row items-center">
-              <View className="h-px flex-1 bg-zinc-800" />
-              <Text className="mx-3 text-[10px] font-semibold uppercase tracking-[1.5px] text-zinc-500">
+              <View
+                style={{
+                  height: 1,
+                  flex: 1,
+                  backgroundColor: zenDarkTheme.borderMuted,
+                }}
+              />
+              <Text
+                style={{
+                  marginHorizontal: 12,
+                  fontSize: 10,
+                  fontWeight: "600",
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                  color: zenDarkTheme.textTertiary,
+                }}
+              >
                 {copy.auth.divider}
               </Text>
-              <View className="h-px flex-1 bg-zinc-800" />
+              <View
+                style={{
+                  height: 1,
+                  flex: 1,
+                  backgroundColor: zenDarkTheme.borderMuted,
+                }}
+              />
             </View>
 
             <Pressable
               onPress={() => void handleGoogle()}
               disabled={isDisabled}
-              className={`flex-row items-center justify-center rounded-[22px] border border-zinc-700 bg-black px-5 py-4 ${
-                isDisabled ? "opacity-50" : ""
-              }`}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 22,
+                borderWidth: 1,
+                borderColor: zenDarkTheme.border,
+                backgroundColor: zenDarkTheme.input,
+                paddingHorizontal: 20,
+                paddingVertical: 16,
+                opacity: isDisabled ? 0.5 : 1,
+              }}
             >
               {submitting ? (
-                <ActivityIndicator color="#10B981" size="small" />
+                <ActivityIndicator color={zenDarkTheme.accent} size="small" />
               ) : (
                 <>
-                  <Globe color="#10B981" size={18} />
-                  <Text className="ml-3 text-sm font-semibold text-white">
+                  <Globe color={zenDarkTheme.accent} size={18} />
+                  <Text
+                    style={{
+                      marginLeft: 12,
+                      fontSize: 14,
+                      fontWeight: "600",
+                      color: zenDarkTheme.textPrimary,
+                    }}
+                  >
                     {copy.auth.googleButton}
                   </Text>
                 </>
               )}
             </Pressable>
 
-            <Text className="mt-4 text-xs leading-5 text-zinc-500">{helperCopy}</Text>
+            <Text
+              style={{
+                marginTop: 16,
+                fontSize: 12,
+                lineHeight: 20,
+                color: zenDarkTheme.textTertiary,
+              }}
+            >
+              {helperCopy}
+            </Text>
           </View>
         </ScrollView>
       </KeyboardDismissView>
@@ -306,10 +416,21 @@ function Field({
 }: FieldProps) {
   return (
     <View className="mb-4">
-      <Text className="mb-2 text-xs font-semibold uppercase tracking-[1.2px] text-zinc-500">
+      <Text className="mb-2 text-xs font-semibold uppercase tracking-[1.2px]" style={{ color: zenDarkTheme.textTertiary }}>
         {label}
       </Text>
-      <View className="flex-row items-center rounded-[22px] border border-zinc-800 bg-black px-4 py-1">
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          borderRadius: 22,
+          borderWidth: 1,
+          borderColor: zenDarkTheme.border,
+          backgroundColor: zenDarkTheme.input,
+          paddingHorizontal: 16,
+          paddingVertical: 4,
+        }}
+      >
         <View className="mr-3">{icon}</View>
         <TextInput
           value={value}
@@ -322,7 +443,7 @@ function Field({
           keyboardType={keyboardType}
           style={{
             flex: 1,
-            color: "#FFFFFF",
+            color: zenDarkTheme.textPrimary,
             fontSize: 15,
             paddingVertical: 14,
           }}

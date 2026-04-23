@@ -1,5 +1,10 @@
 import { PropsWithChildren } from "react";
 import { Pressable, StyleProp, View, ViewStyle } from "react-native";
+import {
+  zenCardShadow,
+  zenCardStyle,
+  zenDarkTheme,
+} from "../theme/zen-dark";
 
 type BentoCardProps = PropsWithChildren<{
   className?: string;
@@ -7,13 +12,7 @@ type BentoCardProps = PropsWithChildren<{
   style?: StyleProp<ViewStyle>;
 }>;
 
-const shadowStyle: ViewStyle = {
-  shadowColor: "#0f172a",
-  shadowOffset: { width: 0, height: 12 },
-  shadowOpacity: 0.08,
-  shadowRadius: 28,
-  elevation: 6,
-};
+const shadowStyle: ViewStyle = zenCardShadow;
 
 export function BentoCard({
   children,
@@ -25,9 +24,10 @@ export function BentoCard({
     return (
       <Pressable
         onPress={onPress}
-        className={`rounded-[28px] border border-slate-100 bg-white ${className}`}
+        className={`rounded-[28px] ${className}`}
         style={({ pressed }) => [
           shadowStyle,
+          zenCardStyle,
           style,
           pressed ? { transform: [{ scale: 0.985 }] } : null,
         ]}
@@ -39,8 +39,16 @@ export function BentoCard({
 
   return (
     <View
-      className={`rounded-[28px] border border-slate-100 bg-white ${className}`}
-      style={[shadowStyle, style]}
+      className={`rounded-[28px] ${className}`}
+      style={[
+        shadowStyle,
+        zenCardStyle,
+        style,
+        {
+          borderColor: zenDarkTheme.border,
+          backgroundColor: zenDarkTheme.surfaceGlass,
+        },
+      ]}
     >
       {children}
     </View>

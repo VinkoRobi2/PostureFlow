@@ -14,6 +14,7 @@ import { LanguageToggle } from "../components/LanguageToggle";
 import { PrimaryButton } from "../components/PrimaryButton";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
+import { zenDarkTheme } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 
 type Props = AppScreenProps<"VerifyEmail">;
@@ -93,7 +94,7 @@ export function VerifyEmailScreen({ navigation }: Props) {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#000000" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: zenDarkTheme.canvas }}>
       <StatusBar style="light" />
 
       <KeyboardDismissView>
@@ -109,8 +110,25 @@ export function VerifyEmailScreen({ navigation }: Props) {
           }}
         >
           <View className="mb-8 flex-row items-center justify-between">
-            <View className="rounded-full border border-zinc-800 bg-zinc-950 px-3 py-1">
-              <Text className="text-[10px] font-semibold uppercase tracking-[1.5px] text-emerald-400">
+            <View
+              style={{
+                borderRadius: 999,
+                borderWidth: 1,
+                borderColor: zenDarkTheme.border,
+                backgroundColor: zenDarkTheme.surfaceGlass,
+                paddingHorizontal: 12,
+                paddingVertical: 4,
+              }}
+            >
+              <Text
+                style={{
+                  color: zenDarkTheme.accentStrong,
+                  fontSize: 10,
+                  fontWeight: "600",
+                  letterSpacing: 1.5,
+                  textTransform: "uppercase",
+                }}
+              >
                 {copy.auth.eyebrow}
               </Text>
             </View>
@@ -119,43 +137,123 @@ export function VerifyEmailScreen({ navigation }: Props) {
           </View>
 
           <View className="flex-1 justify-center">
-            <View className="rounded-[30px] border border-zinc-800 bg-zinc-950 px-6 py-7">
-              <View className="mb-5 h-14 w-14 items-center justify-center rounded-full bg-emerald-500/15">
-                <ShieldCheck color="#10B981" size={24} />
+            <View
+              style={{
+                borderRadius: 30,
+                borderWidth: 1,
+                borderColor: zenDarkTheme.border,
+                backgroundColor: zenDarkTheme.surfaceGlass,
+                paddingHorizontal: 24,
+                paddingVertical: 28,
+              }}
+            >
+              <View
+                style={{
+                  marginBottom: 20,
+                  height: 56,
+                  width: 56,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: 999,
+                  backgroundColor: zenDarkTheme.accentSoft,
+                }}
+              >
+                <ShieldCheck color={zenDarkTheme.accent} size={24} />
               </View>
 
-              <Text className="text-3xl font-semibold leading-10 text-white">
+              <Text style={{ fontSize: 30, fontWeight: "600", lineHeight: 40, color: zenDarkTheme.textPrimary }}>
                 {copy.auth.verifyEmailTitle}
               </Text>
-              <Text className="mt-3 text-sm leading-6 text-zinc-400">
+              <Text style={{ marginTop: 12, fontSize: 14, lineHeight: 24, color: zenDarkTheme.textSecondary }}>
                 {copy.auth.verifyEmailSubtitle}
               </Text>
 
-              <View className="mt-5 rounded-2xl border border-zinc-800 bg-black px-4 py-4">
-                <Text className="text-[10px] font-semibold uppercase tracking-[1.4px] text-zinc-500">
+              <View
+                style={{
+                  marginTop: 20,
+                  borderRadius: 16,
+                  borderWidth: 1,
+                  borderColor: zenDarkTheme.border,
+                  backgroundColor: zenDarkTheme.input,
+                  paddingHorizontal: 16,
+                  paddingVertical: 16,
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 10,
+                    fontWeight: "600",
+                    letterSpacing: 1.4,
+                    textTransform: "uppercase",
+                    color: zenDarkTheme.textTertiary,
+                  }}
+                >
                   {copy.auth.email}
                 </Text>
-                <Text className="mt-2 text-sm font-medium text-white">
+                <Text style={{ marginTop: 8, fontSize: 14, fontWeight: "500", color: zenDarkTheme.textPrimary }}>
                   {pendingVerification?.email ?? "no-email@postureflow.app"}
                 </Text>
               </View>
 
               {pendingVerification?.devVerificationCode ? (
-                <View className="mt-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3">
-                  <Text className="text-[10px] font-semibold uppercase tracking-[1.3px] text-emerald-300">
+                <View
+                  style={{
+                    marginTop: 16,
+                    borderRadius: 16,
+                    borderWidth: 1,
+                    borderColor: zenDarkTheme.border,
+                    backgroundColor: zenDarkTheme.accentSoft,
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      fontWeight: "600",
+                      letterSpacing: 1.3,
+                      textTransform: "uppercase",
+                      color: zenDarkTheme.accentStrong,
+                    }}
+                  >
                     {copy.auth.verificationHint}
                   </Text>
-                  <Text className="mt-1 text-base font-semibold tracking-[3px] text-white">
+                  <Text
+                    style={{
+                      marginTop: 4,
+                      fontSize: 16,
+                      fontWeight: "600",
+                      letterSpacing: 3,
+                      color: zenDarkTheme.textPrimary,
+                    }}
+                  >
                     {pendingVerification.devVerificationCode}
                   </Text>
                 </View>
               ) : null}
 
               <View className="mt-5">
-                <Text className="mb-2 text-xs font-semibold uppercase tracking-[1.2px] text-zinc-500">
+                <Text
+                  style={{
+                    marginBottom: 8,
+                    fontSize: 12,
+                    fontWeight: "600",
+                    letterSpacing: 1.2,
+                    textTransform: "uppercase",
+                    color: zenDarkTheme.textTertiary,
+                  }}
+                >
                   {copy.auth.verificationCode}
                 </Text>
-                <View className="rounded-[22px] border border-zinc-800 bg-black px-4">
+                <View
+                  style={{
+                    borderRadius: 22,
+                    borderWidth: 1,
+                    borderColor: zenDarkTheme.border,
+                    backgroundColor: zenDarkTheme.input,
+                    paddingHorizontal: 16,
+                  }}
+                >
                   <TextInput
                     value={code}
                     onChangeText={setCode}
@@ -163,7 +261,7 @@ export function VerifyEmailScreen({ navigation }: Props) {
                     placeholderTextColor="#52525B"
                     keyboardType="number-pad"
                     style={{
-                      color: "#FFFFFF",
+                      color: zenDarkTheme.textPrimary,
                       fontSize: 18,
                       letterSpacing: 6,
                       paddingVertical: 16,
@@ -179,8 +277,24 @@ export function VerifyEmailScreen({ navigation }: Props) {
               ) : null}
 
               {!isOnline ? (
-                <View className="mt-4 rounded-2xl border border-zinc-800 bg-black px-4 py-3">
-                  <Text className="text-sm leading-5 text-zinc-400">
+                <View
+                  style={{
+                    marginTop: 16,
+                    borderRadius: 16,
+                    borderWidth: 1,
+                    borderColor: zenDarkTheme.border,
+                    backgroundColor: zenDarkTheme.input,
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      lineHeight: 20,
+                      color: zenDarkTheme.textSecondary,
+                    }}
+                  >
                     {copy.auth.offlineNoSession}
                   </Text>
                 </View>
@@ -201,9 +315,15 @@ export function VerifyEmailScreen({ navigation }: Props) {
                   className={!isOnline || submitting ? "opacity-50" : ""}
                 >
                   {submitting ? (
-                    <ActivityIndicator color="#10B981" size="small" />
+                    <ActivityIndicator color={zenDarkTheme.accent} size="small" />
                   ) : (
-                    <Text className="text-sm font-semibold text-emerald-400">
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontWeight: "600",
+                        color: zenDarkTheme.accentStrong,
+                      }}
+                    >
                       {copy.auth.resendButton}
                     </Text>
                   )}
@@ -216,7 +336,13 @@ export function VerifyEmailScreen({ navigation }: Props) {
                     );
                   }}
                 >
-                  <Text className="text-sm font-medium text-zinc-400">
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      fontWeight: "500",
+                      color: zenDarkTheme.textSecondary,
+                    }}
+                  >
                     {copy.auth.backToLogin}
                   </Text>
                 </Pressable>
