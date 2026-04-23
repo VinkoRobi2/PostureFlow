@@ -12,9 +12,10 @@ import { ShieldCheck } from "lucide-react-native";
 import { KeyboardDismissView } from "../components/KeyboardDismissView";
 import { LanguageToggle } from "../components/LanguageToggle";
 import { PrimaryButton } from "../components/PrimaryButton";
+import { ScreenAtmosphere } from "../components/ScreenAtmosphere";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
-import { zenDarkTheme } from "../theme/zen-dark";
+import { zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 
 type Props = AppScreenProps<"VerifyEmail">;
@@ -25,7 +26,9 @@ export function VerifyEmailScreen({ navigation }: Props) {
     locale,
     logout,
     pendingVerification,
+    painSelection,
     resendVerification,
+    setupSelection,
     toggleLocale,
     verifyPendingEmail,
   } = useAppModel();
@@ -35,7 +38,17 @@ export function VerifyEmailScreen({ navigation }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const goNext = (onboardingCompleted: boolean) => {
-    navigation.replace(onboardingCompleted ? "Dashboard" : "PainMap");
+    if (onboardingCompleted) {
+      navigation.replace("Dashboard");
+      return;
+    }
+
+    if (painSelection.length > 0 && setupSelection.length > 0) {
+      navigation.replace("Analyzing");
+      return;
+    }
+
+    navigation.replace("OnboardingProblem");
   };
 
   const handleVerify = async () => {
@@ -96,6 +109,7 @@ export function VerifyEmailScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: zenDarkTheme.canvas }}>
       <StatusBar style="light" />
+      <ScreenAtmosphere />
 
       <KeyboardDismissView>
         <View
@@ -118,13 +132,14 @@ export function VerifyEmailScreen({ navigation }: Props) {
                 backgroundColor: zenDarkTheme.surfaceGlass,
                 paddingHorizontal: 12,
                 paddingVertical: 4,
+                ...zenGlassEffect,
               }}
             >
               <Text
                 style={{
                   color: zenDarkTheme.accentStrong,
                   fontSize: 10,
-                  fontWeight: "600",
+                  fontWeight: "500",
                   letterSpacing: 1.5,
                   textTransform: "uppercase",
                 }}
@@ -145,6 +160,7 @@ export function VerifyEmailScreen({ navigation }: Props) {
                 backgroundColor: zenDarkTheme.surfaceGlass,
                 paddingHorizontal: 24,
                 paddingVertical: 28,
+                ...zenGlassEffect,
               }}
             >
               <View
@@ -161,7 +177,7 @@ export function VerifyEmailScreen({ navigation }: Props) {
                 <ShieldCheck color={zenDarkTheme.accent} size={24} />
               </View>
 
-              <Text style={{ fontSize: 30, fontWeight: "600", lineHeight: 40, color: zenDarkTheme.textPrimary }}>
+              <Text style={{ fontSize: 30, fontWeight: "400", lineHeight: 40, color: zenDarkTheme.textPrimary }}>
                 {copy.auth.verifyEmailTitle}
               </Text>
               <Text style={{ marginTop: 12, fontSize: 14, lineHeight: 24, color: zenDarkTheme.textSecondary }}>
@@ -182,7 +198,7 @@ export function VerifyEmailScreen({ navigation }: Props) {
                 <Text
                   style={{
                     fontSize: 10,
-                    fontWeight: "600",
+                    fontWeight: "500",
                     letterSpacing: 1.4,
                     textTransform: "uppercase",
                     color: zenDarkTheme.textTertiary,
@@ -190,7 +206,7 @@ export function VerifyEmailScreen({ navigation }: Props) {
                 >
                   {copy.auth.email}
                 </Text>
-                <Text style={{ marginTop: 8, fontSize: 14, fontWeight: "500", color: zenDarkTheme.textPrimary }}>
+                <Text style={{ marginTop: 8, fontSize: 14, fontWeight: "400", color: zenDarkTheme.textPrimary }}>
                   {pendingVerification?.email ?? "no-email@postureflow.app"}
                 </Text>
               </View>
@@ -210,7 +226,7 @@ export function VerifyEmailScreen({ navigation }: Props) {
                   <Text
                     style={{
                       fontSize: 10,
-                      fontWeight: "600",
+                      fontWeight: "500",
                       letterSpacing: 1.3,
                       textTransform: "uppercase",
                       color: zenDarkTheme.accentStrong,
@@ -222,7 +238,7 @@ export function VerifyEmailScreen({ navigation }: Props) {
                     style={{
                       marginTop: 4,
                       fontSize: 16,
-                      fontWeight: "600",
+                      fontWeight: "500",
                       letterSpacing: 3,
                       color: zenDarkTheme.textPrimary,
                     }}
@@ -237,7 +253,7 @@ export function VerifyEmailScreen({ navigation }: Props) {
                   style={{
                     marginBottom: 8,
                     fontSize: 12,
-                    fontWeight: "600",
+                    fontWeight: "500",
                     letterSpacing: 1.2,
                     textTransform: "uppercase",
                     color: zenDarkTheme.textTertiary,
@@ -252,6 +268,7 @@ export function VerifyEmailScreen({ navigation }: Props) {
                     borderColor: zenDarkTheme.border,
                     backgroundColor: zenDarkTheme.input,
                     paddingHorizontal: 16,
+                    ...zenGlassEffect,
                   }}
                 >
                   <TextInput
@@ -320,7 +337,7 @@ export function VerifyEmailScreen({ navigation }: Props) {
                     <Text
                       style={{
                         fontSize: 14,
-                        fontWeight: "600",
+                        fontWeight: "500",
                         color: zenDarkTheme.accentStrong,
                       }}
                     >

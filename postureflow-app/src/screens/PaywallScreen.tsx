@@ -9,8 +9,9 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BentoCard } from "../components/BentoCard";
+import { ScreenAtmosphere } from "../components/ScreenAtmosphere";
 import { useAppModel } from "../providers/app-provider";
-import { zenAmbientGlow, zenDarkTheme } from "../theme/zen-dark";
+import { zenAmbientGlow, zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 import { getLocalizedText } from "../utils/localize";
 
@@ -31,10 +32,11 @@ export function PaywallScreen({ navigation }: Props) {
 
   return (
     <LinearGradient
-      colors={[zenDarkTheme.canvas, zenDarkTheme.surface, zenDarkTheme.surfaceMuted]}
+      colors={[zenDarkTheme.canvasAlt, zenDarkTheme.canvas, zenDarkTheme.canvasAlt]}
       style={{ flex: 1 }}
     >
       <SafeAreaView style={{ flex: 1 }}>
+        <ScreenAtmosphere />
         <View
           style={{
             position: "absolute",
@@ -59,16 +61,16 @@ export function PaywallScreen({ navigation }: Props) {
                   alignItems: "center",
                   justifyContent: "center",
                   borderRadius: 16,
-                  backgroundColor: zenDarkTheme.accent,
+                  backgroundColor: zenDarkTheme.accentSoft,
                   borderWidth: 1,
-                  borderColor: "rgba(52,211,153,0.22)",
+                  borderColor: zenDarkTheme.borderMuted,
                 },
                 zenAmbientGlow(0.16, 22),
               ]}
             >
-              <Building2 color={zenDarkTheme.textInverse} size={18} strokeWidth={2.4} />
+              <Building2 color={zenDarkTheme.textPrimary} size={18} strokeWidth={2.4} />
             </View>
-            <Text style={{ fontSize: 14, fontWeight: "600", letterSpacing: 1, color: zenDarkTheme.textPrimary }}>
+            <Text style={{ fontSize: 14, fontWeight: "500", letterSpacing: 1, color: zenDarkTheme.textPrimary }}>
               {getLocalizedText(paywall.brand, locale)}
             </Text>
           </View>
@@ -84,6 +86,7 @@ export function PaywallScreen({ navigation }: Props) {
               borderWidth: 1,
               borderColor: zenDarkTheme.border,
               backgroundColor: zenDarkTheme.surfaceGlass,
+              ...zenGlassEffect,
             }}
           >
             <X color={zenDarkTheme.textPrimary} size={18} />
@@ -91,7 +94,7 @@ export function PaywallScreen({ navigation }: Props) {
           </View>
 
           <View className="flex-1">
-            <Text style={{ marginBottom: 32, fontSize: 36, fontWeight: "300", lineHeight: 46, color: zenDarkTheme.textPrimary }}>
+            <Text style={{ marginBottom: 32, fontSize: 36, fontWeight: "400", lineHeight: 46, color: zenDarkTheme.textPrimary }}>
               {getLocalizedText(paywall.headline, locale)}
             </Text>
 
@@ -102,7 +105,7 @@ export function PaywallScreen({ navigation }: Props) {
                 return (
                   <View key={feature.icon} className="flex-row items-center">
                     <Icon color={zenDarkTheme.accentStrong} size={18} />
-                    <Text style={{ marginLeft: 16, fontSize: 16, fontWeight: "500", color: zenDarkTheme.textSecondary }}>
+                    <Text style={{ marginLeft: 16, fontSize: 16, fontWeight: "400", color: zenDarkTheme.textSecondary }}>
                       {getLocalizedText(feature.text, locale)}
                     </Text>
                   </View>
@@ -117,14 +120,14 @@ export function PaywallScreen({ navigation }: Props) {
               <View className="absolute right-4 top-4 opacity-10">
                 <Building2 color={zenDarkTheme.textPrimary} size={84} />
               </View>
-              <Text style={{ fontSize: 18, fontWeight: "500", color: zenDarkTheme.textSecondary }}>
+              <Text style={{ fontSize: 18, fontWeight: "400", color: zenDarkTheme.textSecondary }}>
                 {getLocalizedText(paywall.pricing.planName, locale)}
               </Text>
               <View className="mt-3 flex-row items-end">
-                <Text style={{ fontSize: 60, fontWeight: "600", letterSpacing: -1.4, color: zenDarkTheme.textPrimary }}>
+                <Text style={{ fontSize: 60, fontWeight: "400", letterSpacing: -1.4, color: zenDarkTheme.textPrimary }}>
                   ${paywall.pricing.pricePerSeat}
                 </Text>
-                <Text style={{ marginBottom: 8, marginLeft: 8, fontSize: 14, fontWeight: "500", color: zenDarkTheme.textTertiary }}>
+                <Text style={{ marginBottom: 8, marginLeft: 8, fontSize: 14, fontWeight: "400", color: zenDarkTheme.textTertiary }}>
                   {getLocalizedText(paywall.pricing.unit, locale)}
                 </Text>
               </View>
@@ -133,24 +136,25 @@ export function PaywallScreen({ navigation }: Props) {
                 style={[
                   {
                     marginTop: 32,
-                    borderRadius: 22,
-                    backgroundColor: zenDarkTheme.accent,
+                    borderRadius: 32,
+                    backgroundColor: zenDarkTheme.accentSoft,
                     paddingHorizontal: 24,
                     paddingVertical: 16,
                     borderWidth: 1,
-                    borderColor: "rgba(52,211,153,0.26)",
+                    borderColor: zenDarkTheme.borderMuted,
+                    ...zenGlassEffect,
                   },
                   zenAmbientGlow(0.18, 26),
                 ]}
               >
-                <Text style={{ textAlign: "center", fontSize: 16, fontWeight: "600", color: zenDarkTheme.textInverse }}>
+                <Text style={{ textAlign: "center", fontSize: 16, fontWeight: "500", color: zenDarkTheme.textPrimary }}>
                   {getLocalizedText(paywall.pricing.cta, locale)}
                 </Text>
               </Pressable>
             </BentoCard>
 
             <Pressable className="mt-6 pb-6">
-              <Text style={{ textAlign: "center", fontSize: 14, fontWeight: "500", color: zenDarkTheme.textTertiary }}>
+              <Text style={{ textAlign: "center", fontSize: 14, fontWeight: "400", color: zenDarkTheme.textTertiary }}>
                 {getLocalizedText(paywall.pricing.secondaryCta, locale)}
               </Text>
             </Pressable>

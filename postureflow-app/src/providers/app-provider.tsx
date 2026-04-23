@@ -28,6 +28,7 @@ import {
   DashboardResponse,
   LibraryResponse,
   LocaleCode,
+  OnboardingDraft,
   PaywallResponse,
   PendingSyncEvent,
   PendingVerificationState,
@@ -48,7 +49,10 @@ import { fromBackendLocale, toBackendLocale } from "../utils/localize";
 
 type EntryRoute = Extract<
   keyof RootStackParamList,
-  "Auth" | "VerifyEmail" | "PainMap" | "Dashboard"
+  | "OnboardingProblem"
+  | "VerifyEmail"
+  | "Analyzing"
+  | "Dashboard"
 >;
 
 type AppContextValue = {
@@ -60,6 +64,7 @@ type AppContextValue = {
   library: LibraryResponse | null;
   paywall: PaywallResponse | null;
   successSummary: CompletionSummary | null;
+  onboardingDraft: OnboardingDraft;
   painSelection: string[];
   setupSelection: string[];
   isHydrated: boolean;
@@ -82,6 +87,9 @@ type AppContextValue = {
   verifyPendingEmail: (code: string) => Promise<AuthResult>;
   resendVerification: () => Promise<AuthResult | null>;
   logout: () => Promise<void>;
+  setOnboardingName: (value: string) => void;
+  setScreenHours: (value: number) => void;
+  clearOnboardingDraft: () => void;
   setPainSelection: (value: string[]) => void;
   setSetupSelection: (value: string[]) => void;
   submitOnboarding: () => Promise<void>;
@@ -169,6 +177,18 @@ function getGoogleFirstName(email: string) {
     : "Google";
 }
 
+function getSetupOptionIdForScreenHours(hours: number) {
+  if (hours >= 10) {
+    return "burnout";
+  }
+
+  if (hours >= 6) {
+    return "digital_fatigue";
+  }
+
+  return "deep_focus";
+}
+
 export function AppProvider({ children }: PropsWithChildren) {
   const [locale, setLocale] = useState<LocaleCode>("en");
   const [authSession, setAuthSession] = useState<AuthSessionSnapshot | null>(null);
@@ -179,6 +199,10 @@ export function AppProvider({ children }: PropsWithChildren) {
   const [library, setLibrary] = useState<LibraryResponse | null>(null);
   const [paywall, setPaywall] = useState<PaywallResponse | null>(null);
   const [successSummary, setSuccessSummary] = useState<CompletionSummary | null>(null);
+  const [onboardingDraft, setOnboardingDraft] = useState<OnboardingDraft>({
+    firstName: "",
+    screenHours: null,
+  });
   const [painSelection, setPainSelection] = useState<string[]>([]);
   const [setupSelection, setSetupSelection] = useState<string[]>([]);
   const [isHydrated, setHydrated] = useState(false);
@@ -243,6 +267,11 @@ export function AppProvider({ children }: PropsWithChildren) {
         setLibrary(null);
         setPaywall(null);
         setSuccessSummary(null);
+        setOnboardingDraft((current) => ({
+          ...current,
+          firstName: current.firstName,
+          screenHours: current.screenHours,
+        }));
         setPainSelection([]);
         setSetupSelection([]);
       });
@@ -289,6 +318,10 @@ export function AppProvider({ children }: PropsWithChildren) {
 
       setPainSelection(result.bootstrap.onboarding.selectedPainRegionIds);
       setSetupSelection(result.bootstrap.onboarding.selectedSetupOptionIds);
+      setOnboardingDraft((current) => ({
+        firstName: current.firstName || result.session.user.firstName,
+        screenHours: current.screenHours,
+      }));
 
       await Promise.all([
         writeString(STORAGE_KEYS.locale, nextLocale),
@@ -312,6 +345,10 @@ export function AppProvider({ children }: PropsWithChildren) {
       setLibrary(null);
       setPaywall(null);
       setSuccessSummary(null);
+      setOnboardingDraft({
+        firstName: "",
+        screenHours: null,
+      });
     });
 
     setPainSelection([]);
@@ -431,6 +468,10 @@ export function AppProvider({ children }: PropsWithChildren) {
         setPendingVerification(storedPendingVerification);
         setSuccessSummary(storedSummary);
         queueRef.current = storedQueue;
+        setOnboardingDraft({
+          firstName: storedAuthSession?.user.firstName ?? "",
+          screenHours: null,
+        });
 
         if (storedAuthSession) {
           const baseUser = createFallbackUser(nextLocale, storedAuthSession.user);
@@ -468,6 +509,10 @@ export function AppProvider({ children }: PropsWithChildren) {
         setLibrary(createFallbackLibrary(nextLocale));
         setPaywall(nextPaywall);
         setSuccessSummary(null);
+        setOnboardingDraft({
+          firstName: "",
+          screenHours: null,
+        });
         queueRef.current = [];
         setPainSelection([]);
         setSetupSelection([]);
@@ -647,6 +692,28 @@ export function AppProvider({ children }: PropsWithChildren) {
     await clearSessionState();
   }, [authSession?.token, clearSessionState, isOnline]);
 
+  const setOnboardingName = useCallback((value: string) => {
+    setOnboardingDraft((current) => ({
+      ...current,
+      firstName: value,
+    }));
+  }, []);
+
+  const setScreenHours = useCallback((value: number) => {
+    setOnboardingDraft((current) => ({
+      ...current,
+      screenHours: value,
+    }));
+    setSetupSelection([getSetupOptionIdForScreenHours(value)]);
+  }, []);
+
+  const clearOnboardingDraft = useCallback(() => {
+    setOnboardingDraft({
+      firstName: "",
+      screenHours: null,
+    });
+  }, []);
+
   const submitOnboarding = useCallback(async () => {
     if (!bootstrap || !currentUserId) {
       return;
@@ -684,6 +751,8 @@ export function AppProvider({ children }: PropsWithChildren) {
       await writeJson(STORAGE_KEYS.authSession, nextSession);
     }
 
+    clearOnboardingDraft();
+
     if (isOnline) {
       try {
         await api.completeOnboarding(
@@ -720,6 +789,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     locale,
     painSelection,
     setupSelection,
+    clearOnboardingDraft,
   ]);
 
   const downloadRoutine = useCallback(
@@ -906,15 +976,29 @@ export function AppProvider({ children }: PropsWithChildren) {
     if (authSession) {
       const onboardingCompleted =
         bootstrap?.user.onboardingCompleted ?? authSession.user.onboardingCompleted;
-      return onboardingCompleted ? "Dashboard" : "PainMap";
+      if (onboardingCompleted) {
+        return "Dashboard";
+      }
+
+      if (painSelection.length > 0 && setupSelection.length > 0) {
+        return "Analyzing";
+      }
+
+      return "OnboardingProblem";
     }
 
     if (pendingVerification?.email) {
       return "VerifyEmail";
     }
 
-    return "Auth";
-  }, [authSession, bootstrap?.user.onboardingCompleted, pendingVerification?.email]);
+    return "OnboardingProblem";
+  }, [
+    authSession,
+    bootstrap?.user.onboardingCompleted,
+    painSelection.length,
+    pendingVerification?.email,
+    setupSelection.length,
+  ]);
 
   const value = useMemo<AppContextValue>(
     () => ({
@@ -926,6 +1010,7 @@ export function AppProvider({ children }: PropsWithChildren) {
       library,
       paywall,
       successSummary,
+      onboardingDraft,
       painSelection,
       setupSelection,
       isHydrated,
@@ -939,6 +1024,9 @@ export function AppProvider({ children }: PropsWithChildren) {
       verifyPendingEmail,
       resendVerification,
       logout,
+      setOnboardingName,
+      setScreenHours,
+      clearOnboardingDraft,
       setPainSelection,
       setSetupSelection,
       submitOnboarding,
@@ -963,12 +1051,16 @@ export function AppProvider({ children }: PropsWithChildren) {
       locale,
       loginWithEmail,
       logout,
+      onboardingDraft,
       painSelection,
       paywall,
       pendingVerification,
       refreshRemoteState,
       registerWithEmail,
       resendVerification,
+      setOnboardingName,
+      setScreenHours,
+      clearOnboardingDraft,
       setupSelection,
       startRoutine,
       submitOnboarding,

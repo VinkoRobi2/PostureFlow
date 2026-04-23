@@ -1,8 +1,9 @@
 import { Check, ArrowRight } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ScreenAtmosphere } from "../components/ScreenAtmosphere";
 import { useAppModel } from "../providers/app-provider";
-import { zenDarkTheme } from "../theme/zen-dark";
+import { zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 import { getLocalizedText } from "../utils/localize";
 
@@ -13,6 +14,7 @@ export function SuccessScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: zenDarkTheme.canvas }}>
+      <ScreenAtmosphere />
       <View className="flex-1 items-center justify-center px-6">
         <View
           style={{
@@ -22,12 +24,13 @@ export function SuccessScreen({ navigation }: Props) {
             alignItems: "center",
             justifyContent: "center",
             borderRadius: 999,
-            backgroundColor: zenDarkTheme.accent,
+            backgroundColor: zenDarkTheme.accentSoft,
             borderWidth: 1,
-            borderColor: "rgba(52,211,153,0.24)",
+            borderColor: zenDarkTheme.borderMuted,
+            ...zenGlassEffect,
           }}
         >
-          <Check color={zenDarkTheme.textInverse} size={44} strokeWidth={3} />
+          <Check color={zenDarkTheme.textPrimary} size={44} strokeWidth={3} />
         </View>
 
         <View className="w-full max-w-sm items-center">
@@ -67,7 +70,7 @@ export function SuccessScreen({ navigation }: Props) {
                     backgroundColor: zenDarkTheme.accent,
                   }}
                 />
-                <Text style={{ flex: 1, fontSize: 14, fontWeight: "500", color: zenDarkTheme.textSecondary }}>
+                <Text style={{ flex: 1, fontSize: 14, fontWeight: "400", color: zenDarkTheme.textSecondary }}>
                   {getLocalizedText(benefit, locale)}
                 </Text>
               </View>
@@ -85,15 +88,16 @@ export function SuccessScreen({ navigation }: Props) {
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
-            borderRadius: 24,
-            backgroundColor: zenDarkTheme.accent,
+            borderRadius: 32,
+            backgroundColor: zenDarkTheme.accentSoft,
             borderWidth: 1,
-            borderColor: "rgba(52,211,153,0.24)",
+            borderColor: zenDarkTheme.borderMuted,
             paddingHorizontal: 32,
             paddingVertical: 16,
+            ...zenGlassEffect,
           }}
         >
-          <Text style={{ fontSize: 16, fontWeight: "600", color: zenDarkTheme.textInverse }}>
+          <Text style={{ fontSize: 16, fontWeight: "500", color: zenDarkTheme.textPrimary }}>
             {getLocalizedText(
               successSummary?.cta ?? {
                 en: "Back to Dashboard",
@@ -102,7 +106,7 @@ export function SuccessScreen({ navigation }: Props) {
               locale,
             )}
           </Text>
-          <ArrowRight color={zenDarkTheme.textInverse} size={20} />
+          <ArrowRight color={zenDarkTheme.textPrimary} size={20} />
         </Pressable>
       </View>
     </SafeAreaView>

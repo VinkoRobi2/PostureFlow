@@ -55,6 +55,11 @@ export type PendingVerificationState = {
   devVerificationCode?: string | null;
 };
 
+export type OnboardingDraft = {
+  firstName: string;
+  screenHours: number | null;
+};
+
 export type PainRegion = {
   id: string;
   label: LocalizedText;
@@ -213,6 +218,13 @@ export type PendingSyncEvent = {
 
 export type RootStackParamList = {
   Splash: undefined;
+  OnboardingProblem: undefined;
+  OnboardingSolution: undefined;
+  OnboardingName: undefined;
+  OnboardingHours: undefined;
+  OnboardingScanner: undefined;
+  OnboardingAha: undefined;
+  OnboardingTrust: undefined;
   Auth: { mode?: AuthFormMode } | undefined;
   VerifyEmail: undefined;
   PainMap: undefined;

@@ -24,10 +24,11 @@ export function BentoCard({
     return (
       <Pressable
         onPress={onPress}
-        className={`rounded-[28px] ${className}`}
+        className={`rounded-[32px] ${className}`}
         style={({ pressed }) => [
           shadowStyle,
           zenCardStyle,
+          { overflow: "hidden" },
           style,
           pressed ? { transform: [{ scale: 0.985 }] } : null,
         ]}
@@ -39,7 +40,7 @@ export function BentoCard({
 
   return (
     <View
-      className={`rounded-[28px] ${className}`}
+      className={`rounded-[32px] ${className}`}
       style={[
         shadowStyle,
         zenCardStyle,
@@ -47,6 +48,7 @@ export function BentoCard({
         {
           borderColor: zenDarkTheme.border,
           backgroundColor: zenDarkTheme.surfaceGlass,
+          overflow: "hidden",
         },
       ]}
     >

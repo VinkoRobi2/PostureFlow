@@ -13,9 +13,10 @@ import { Globe, LockKeyhole, Mail, UserRound } from "lucide-react-native";
 import { KeyboardDismissView } from "../components/KeyboardDismissView";
 import { LanguageToggle } from "../components/LanguageToggle";
 import { PrimaryButton } from "../components/PrimaryButton";
+import { ScreenAtmosphere } from "../components/ScreenAtmosphere";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
-import { zenDarkTheme } from "../theme/zen-dark";
+import { zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
 import type { AppScreenProps, AuthFormMode } from "../types/app";
 
 type Props = AppScreenProps<"Auth">;
@@ -26,12 +27,15 @@ export function AuthScreen({ navigation, route }: Props) {
     isOnline,
     locale,
     loginWithEmail,
+    onboardingDraft,
+    painSelection,
     registerWithEmail,
+    setupSelection,
     toggleLocale,
   } = useAppModel();
   const copy = messages[locale];
   const [mode, setMode] = useState<AuthFormMode>(route.params?.mode ?? "login");
-  const [firstName, setFirstName] = useState("");
+  const [firstName, setFirstName] = useState(onboardingDraft.firstName);
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,7 +50,17 @@ export function AuthScreen({ navigation, route }: Props) {
   );
 
   const goNext = (onboardingCompleted: boolean) => {
-    navigation.replace(onboardingCompleted ? "Dashboard" : "PainMap");
+    if (onboardingCompleted) {
+      navigation.replace("Dashboard");
+      return;
+    }
+
+    if (painSelection.length > 0 && setupSelection.length > 0) {
+      navigation.replace("Analyzing");
+      return;
+    }
+
+    navigation.replace("OnboardingProblem");
   };
 
   const handleSubmit = async () => {
@@ -122,6 +136,7 @@ export function AuthScreen({ navigation, route }: Props) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: zenDarkTheme.canvas }}>
       <StatusBar style="light" />
+      <ScreenAtmosphere />
 
       <KeyboardDismissView>
         <ScrollView
@@ -146,13 +161,14 @@ export function AuthScreen({ navigation, route }: Props) {
                 backgroundColor: zenDarkTheme.surfaceGlass,
                 paddingHorizontal: 12,
                 paddingVertical: 4,
+                ...zenGlassEffect,
               }}
             >
               <Text
                 style={{
                   color: zenDarkTheme.accentStrong,
                   fontSize: 10,
-                  fontWeight: "600",
+                  fontWeight: "500",
                   letterSpacing: 1.5,
                   textTransform: "uppercase",
                 }}
@@ -165,7 +181,7 @@ export function AuthScreen({ navigation, route }: Props) {
           </View>
 
           <View className="mb-8">
-            <Text style={{ fontSize: 30, fontWeight: "600", lineHeight: 40, color: zenDarkTheme.textPrimary }}>
+            <Text style={{ fontSize: 30, fontWeight: "400", lineHeight: 40, color: zenDarkTheme.textPrimary }}>
               {copy.auth.title}
             </Text>
             <Text style={{ marginTop: 12, fontSize: 14, lineHeight: 24, color: zenDarkTheme.textSecondary }}>
@@ -182,6 +198,7 @@ export function AuthScreen({ navigation, route }: Props) {
               borderColor: zenDarkTheme.border,
               backgroundColor: zenDarkTheme.surfaceGlass,
               padding: 4,
+              ...zenGlassEffect,
             }}
           >
             {(["login", "register"] as const).map((item) => {
@@ -198,18 +215,20 @@ export function AuthScreen({ navigation, route }: Props) {
                     borderRadius: 999,
                     paddingHorizontal: 16,
                     paddingVertical: 12,
-                    backgroundColor: active ? zenDarkTheme.accent : "transparent",
+                    backgroundColor: active ? zenDarkTheme.accentSoft : "transparent",
+                    borderWidth: active ? 1 : 0,
+                    borderColor: active ? zenDarkTheme.borderMuted : "transparent",
                   }}
                 >
                   <Text
                     style={{
                       textAlign: "center",
                       fontSize: 12,
-                      fontWeight: "600",
+                      fontWeight: "500",
                       letterSpacing: 1,
                       textTransform: "uppercase",
                       color: active
-                        ? zenDarkTheme.textInverse
+                        ? zenDarkTheme.textPrimary
                         : zenDarkTheme.textSecondary,
                     }}
                   >
@@ -228,11 +247,12 @@ export function AuthScreen({ navigation, route }: Props) {
               backgroundColor: zenDarkTheme.surfaceGlass,
               paddingHorizontal: 20,
               paddingVertical: 20,
+              ...zenGlassEffect,
             }}
           >
             {isRegister ? (
               <Field
-                icon={<UserRound color="#10B981" size={16} />}
+                icon={<UserRound color={zenDarkTheme.accent} size={16} />}
                 label={copy.auth.firstName}
                 value={firstName}
                 onChangeText={setFirstName}
@@ -243,7 +263,7 @@ export function AuthScreen({ navigation, route }: Props) {
 
             {isRegister ? (
               <Field
-                icon={<UserRound color="#A1A1AA" size={16} />}
+                icon={<UserRound color={zenDarkTheme.textSecondary} size={16} />}
                 label={copy.auth.lastName}
                 value={lastName}
                 onChangeText={setLastName}
@@ -253,7 +273,7 @@ export function AuthScreen({ navigation, route }: Props) {
             ) : null}
 
             <Field
-              icon={<Mail color="#10B981" size={16} />}
+              icon={<Mail color={zenDarkTheme.accent} size={16} />}
               label={copy.auth.email}
               value={email}
               onChangeText={setEmail}
@@ -264,7 +284,7 @@ export function AuthScreen({ navigation, route }: Props) {
             />
 
             <Field
-              icon={<LockKeyhole color="#10B981" size={16} />}
+              icon={<LockKeyhole color={zenDarkTheme.accent} size={16} />}
               label={copy.auth.password}
               value={password}
               onChangeText={setPassword}
@@ -322,7 +342,7 @@ export function AuthScreen({ navigation, route }: Props) {
                 style={{
                   marginHorizontal: 12,
                   fontSize: 10,
-                  fontWeight: "600",
+                  fontWeight: "500",
                   letterSpacing: 1.5,
                   textTransform: "uppercase",
                   color: zenDarkTheme.textTertiary,
@@ -353,6 +373,7 @@ export function AuthScreen({ navigation, route }: Props) {
                 paddingHorizontal: 20,
                 paddingVertical: 16,
                 opacity: isDisabled ? 0.5 : 1,
+                ...zenGlassEffect,
               }}
             >
               {submitting ? (
@@ -364,7 +385,7 @@ export function AuthScreen({ navigation, route }: Props) {
                     style={{
                       marginLeft: 12,
                       fontSize: 14,
-                      fontWeight: "600",
+                      fontWeight: "500",
                       color: zenDarkTheme.textPrimary,
                     }}
                   >
@@ -416,7 +437,7 @@ function Field({
 }: FieldProps) {
   return (
     <View className="mb-4">
-      <Text className="mb-2 text-xs font-semibold uppercase tracking-[1.2px]" style={{ color: zenDarkTheme.textTertiary }}>
+      <Text className="mb-2 text-xs font-semibold uppercase tracking-[1.2px]" style={{ color: zenDarkTheme.textTertiary, fontWeight: "500" }}>
         {label}
       </Text>
       <View
@@ -429,6 +450,7 @@ function Field({
           backgroundColor: zenDarkTheme.input,
           paddingHorizontal: 16,
           paddingVertical: 4,
+          ...zenGlassEffect,
         }}
       >
         <View className="mr-3">{icon}</View>

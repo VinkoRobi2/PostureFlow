@@ -1,6 +1,6 @@
 import { Languages } from "lucide-react-native";
 import { Pressable, Text, View } from "react-native";
-import { zenDarkTheme } from "../theme/zen-dark";
+import { zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
 import { LocaleCode } from "../types/app";
 
 type LanguageToggleProps = {
@@ -30,6 +30,7 @@ export function LanguageToggle({
         backgroundColor: isDark
           ? zenDarkTheme.surfaceGlass
           : zenDarkTheme.textPrimary,
+        ...zenGlassEffect,
         opacity: pressed ? 0.85 : 1,
       })}
     >
@@ -41,7 +42,7 @@ export function LanguageToggle({
         <Text
           style={{
             fontSize: 10,
-            fontWeight: "600",
+            fontWeight: "500",
             letterSpacing: 1,
             textTransform: "uppercase",
             color: isDark ? zenDarkTheme.textTertiary : zenDarkTheme.textSecondary,
@@ -54,7 +55,7 @@ export function LanguageToggle({
         style={{
           marginLeft: 8,
           fontSize: 12,
-          fontWeight: "600",
+          fontWeight: "500",
           letterSpacing: 1,
           textTransform: "uppercase",
           color: isDark ? zenDarkTheme.accentStrong : zenDarkTheme.accent,

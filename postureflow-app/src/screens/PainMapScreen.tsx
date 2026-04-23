@@ -2,6 +2,7 @@ import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BiomechanicalScanner } from "../components/BiomechanicalScanner";
 import { LanguageToggle } from "../components/LanguageToggle";
+import { ScreenAtmosphere } from "../components/ScreenAtmosphere";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
 import { zenDarkTheme } from "../theme/zen-dark";
@@ -44,6 +45,7 @@ export function PainMapScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: zenDarkTheme.canvas }}>
+      <ScreenAtmosphere />
       <ScrollView
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"

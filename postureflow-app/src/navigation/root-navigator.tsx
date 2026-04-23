@@ -4,6 +4,13 @@ import { AnalyzingScreen } from "../screens/AnalyzingScreen";
 import { AuthScreen } from "../screens/AuthScreen";
 import { DashboardScreen } from "../screens/DashboardScreen";
 import { LibraryScreen } from "../screens/LibraryScreen";
+import { OnboardingAhaScreen } from "../screens/onboarding/OnboardingAhaScreen";
+import { OnboardingHoursScreen } from "../screens/onboarding/OnboardingHoursScreen";
+import { OnboardingNameScreen } from "../screens/onboarding/OnboardingNameScreen";
+import { OnboardingProblemScreen } from "../screens/onboarding/OnboardingProblemScreen";
+import { OnboardingScannerScreen } from "../screens/onboarding/OnboardingScannerScreen";
+import { OnboardingSolutionScreen } from "../screens/onboarding/OnboardingSolutionScreen";
+import { OnboardingTrustScreen } from "../screens/onboarding/OnboardingTrustScreen";
 import { PainMapScreen } from "../screens/PainMapScreen";
 import { PaywallScreen } from "../screens/PaywallScreen";
 import { PlayerScreen } from "../screens/PlayerScreen";
@@ -85,6 +92,69 @@ function renderCurrentRoute(route: RouteEntry, navigation: AppNavigation) {
           key={route.key}
           navigation={navigation}
           route={route as AppRoute<"Auth">}
+          isFocused
+        />
+      );
+    case "OnboardingProblem":
+      return (
+        <OnboardingProblemScreen
+          key={route.key}
+          navigation={navigation}
+          route={route as AppRoute<"OnboardingProblem">}
+          isFocused
+        />
+      );
+    case "OnboardingSolution":
+      return (
+        <OnboardingSolutionScreen
+          key={route.key}
+          navigation={navigation}
+          route={route as AppRoute<"OnboardingSolution">}
+          isFocused
+        />
+      );
+    case "OnboardingName":
+      return (
+        <OnboardingNameScreen
+          key={route.key}
+          navigation={navigation}
+          route={route as AppRoute<"OnboardingName">}
+          isFocused
+        />
+      );
+    case "OnboardingHours":
+      return (
+        <OnboardingHoursScreen
+          key={route.key}
+          navigation={navigation}
+          route={route as AppRoute<"OnboardingHours">}
+          isFocused
+        />
+      );
+    case "OnboardingScanner":
+      return (
+        <OnboardingScannerScreen
+          key={route.key}
+          navigation={navigation}
+          route={route as AppRoute<"OnboardingScanner">}
+          isFocused
+        />
+      );
+    case "OnboardingAha":
+      return (
+        <OnboardingAhaScreen
+          key={route.key}
+          navigation={navigation}
+          route={route as AppRoute<"OnboardingAha">}
+          isFocused
+        />
+      );
+    case "OnboardingTrust":
+      return (
+        <OnboardingTrustScreen
+          key={route.key}
+          navigation={navigation}
+          route={route as AppRoute<"OnboardingTrust">}
           isFocused
         />
       );

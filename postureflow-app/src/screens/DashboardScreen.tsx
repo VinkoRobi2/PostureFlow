@@ -15,10 +15,11 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ScreenAtmosphere } from "../components/ScreenAtmosphere";
 import { LanguageToggle } from "../components/LanguageToggle";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
-import { zenDarkTheme } from "../theme/zen-dark";
+import { zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 import { getLocalizedText } from "../utils/localize";
 
@@ -33,7 +34,6 @@ const DASHBOARD_THEME = {
   primaryText: zenDarkTheme.textPrimary,
   secondaryText: zenDarkTheme.textSecondary,
   tertiaryText: zenDarkTheme.textTertiary,
-  yellow: "#EAB308",
 } as const;
 
 export function DashboardScreen({ navigation }: Props) {
@@ -73,6 +73,7 @@ export function DashboardScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: DASHBOARD_THEME.background }}>
+      <ScreenAtmosphere />
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 16,
@@ -105,12 +106,12 @@ export function DashboardScreen({ navigation }: Props) {
             />
             <Text
               style={{
-                color: DASHBOARD_THEME.secondaryText,
-                fontSize: 11,
-                fontWeight: "700",
-                letterSpacing: 1.6,
-                textTransform: "uppercase",
-              }}
+              color: DASHBOARD_THEME.secondaryText,
+              fontSize: 11,
+              fontWeight: "500",
+              letterSpacing: 1.6,
+              textTransform: "uppercase",
+            }}
             >
               {getLocalizedText(dashboard.systemStatus.label, locale)}
             </Text>
@@ -127,19 +128,20 @@ export function DashboardScreen({ navigation }: Props) {
                 marginLeft: 10,
                 width: 34,
                 height: 34,
-                borderRadius: 10,
-                backgroundColor: DASHBOARD_THEME.surfaceAlt,
+                borderRadius: 16,
+                backgroundColor: DASHBOARD_THEME.surface,
                 borderWidth: 1,
                 borderColor: DASHBOARD_THEME.border,
                 alignItems: "center",
                 justifyContent: "center",
+                ...zenGlassEffect,
               }}
             >
               <Text
                 style={{
                   color: DASHBOARD_THEME.primaryText,
                   fontSize: 12,
-                  fontWeight: "700",
+                  fontWeight: "500",
                 }}
               >
                 {dashboard.systemStatus.operatorBadge}
@@ -153,11 +155,12 @@ export function DashboardScreen({ navigation }: Props) {
           style={{
             marginBottom: 14,
             minHeight: 248,
-            borderRadius: 24,
+            borderRadius: 32,
             borderWidth: 1,
             borderColor: DASHBOARD_THEME.border,
             backgroundColor: DASHBOARD_THEME.surface,
             overflow: "hidden",
+            ...zenGlassEffect,
           }}
         >
           <Image
@@ -185,7 +188,7 @@ export function DashboardScreen({ navigation }: Props) {
                   style={{
                     color: DASHBOARD_THEME.accent,
                     fontSize: 10,
-                    fontWeight: "700",
+                    fontWeight: "500",
                     letterSpacing: 1.2,
                     textTransform: "uppercase",
                     marginBottom: 6,
@@ -197,7 +200,7 @@ export function DashboardScreen({ navigation }: Props) {
                   style={{
                     color: DASHBOARD_THEME.primaryText,
                     fontSize: 24,
-                    fontWeight: "700",
+                    fontWeight: "400",
                     lineHeight: 28,
                   }}
                 >
@@ -209,12 +212,13 @@ export function DashboardScreen({ navigation }: Props) {
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  borderRadius: 10,
+                  borderRadius: 20,
                   borderWidth: 1,
                   borderColor: DASHBOARD_THEME.border,
-                  backgroundColor: DASHBOARD_THEME.surfaceAlt,
+                  backgroundColor: DASHBOARD_THEME.surface,
                   paddingHorizontal: 8,
                   paddingVertical: 6,
+                  ...zenGlassEffect,
                 }}
               >
                 <Clock3 color={DASHBOARD_THEME.secondaryText} size={12} />
@@ -222,7 +226,7 @@ export function DashboardScreen({ navigation }: Props) {
                   style={{
                     color: DASHBOARD_THEME.secondaryText,
                     fontSize: 11,
-                    fontWeight: "700",
+                    fontWeight: "500",
                     marginLeft: 5,
                   }}
                 >
@@ -266,22 +270,25 @@ export function DashboardScreen({ navigation }: Props) {
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  borderRadius: 12,
-                  backgroundColor: DASHBOARD_THEME.primaryText,
+                  borderRadius: 24,
+                  backgroundColor: zenDarkTheme.accentSoft,
+                  borderWidth: 1,
+                  borderColor: zenDarkTheme.borderMuted,
                   paddingHorizontal: 14,
                   paddingVertical: 10,
+                  ...zenGlassEffect,
                 }}
               >
                 <Play
-                  color={DASHBOARD_THEME.background}
-                  fill={DASHBOARD_THEME.background}
+                  color={DASHBOARD_THEME.primaryText}
+                  fill={DASHBOARD_THEME.primaryText}
                   size={14}
                 />
                 <Text
                   style={{
-                  color: DASHBOARD_THEME.background,
+                    color: DASHBOARD_THEME.primaryText,
                     fontSize: 13,
-                    fontWeight: "800",
+                    fontWeight: "500",
                     marginLeft: 8,
                   }}
                 >
@@ -297,12 +304,13 @@ export function DashboardScreen({ navigation }: Props) {
             style={{
               flex: 1,
               minHeight: 126,
-              borderRadius: 20,
+              borderRadius: 32,
               borderWidth: 1,
               borderColor: DASHBOARD_THEME.border,
               backgroundColor: DASHBOARD_THEME.surface,
               padding: 16,
               marginRight: 6,
+              ...zenGlassEffect,
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
@@ -311,7 +319,7 @@ export function DashboardScreen({ navigation }: Props) {
                 style={{
                   color: DASHBOARD_THEME.secondaryText,
                   fontSize: 10,
-                  fontWeight: "700",
+                  fontWeight: "500",
                   letterSpacing: 1.1,
                   textTransform: "uppercase",
                   marginLeft: 6,
@@ -335,7 +343,7 @@ export function DashboardScreen({ navigation }: Props) {
                 style={{
                   color: DASHBOARD_THEME.secondaryText,
                   fontSize: 14,
-                  fontWeight: "600",
+                  fontWeight: "500",
                 }}
               >
                 %
@@ -356,7 +364,7 @@ export function DashboardScreen({ navigation }: Props) {
                   width: `${dashboard.tensionIndex.progress * 100}%`,
                   height: "100%",
                   borderRadius: 999,
-                  backgroundColor: DASHBOARD_THEME.yellow,
+                  backgroundColor: DASHBOARD_THEME.accent,
                 }}
               />
             </View>
@@ -366,12 +374,13 @@ export function DashboardScreen({ navigation }: Props) {
             style={{
               flex: 1,
               minHeight: 126,
-              borderRadius: 20,
+              borderRadius: 32,
               borderWidth: 1,
               borderColor: DASHBOARD_THEME.border,
               backgroundColor: DASHBOARD_THEME.surface,
               padding: 16,
               marginLeft: 6,
+              ...zenGlassEffect,
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
@@ -380,7 +389,7 @@ export function DashboardScreen({ navigation }: Props) {
                 style={{
                   color: DASHBOARD_THEME.secondaryText,
                   fontSize: 10,
-                  fontWeight: "700",
+                  fontWeight: "500",
                   letterSpacing: 1.1,
                   textTransform: "uppercase",
                   marginLeft: 6,
@@ -408,6 +417,7 @@ export function DashboardScreen({ navigation }: Props) {
                   key={`critical-zone-${index}`}
                   style={{
                     borderRadius: 8,
+                    backgroundColor: zenDarkTheme.surfaceMuted,
                     borderWidth: 1,
                     borderColor: DASHBOARD_THEME.border,
                     paddingHorizontal: 6,
@@ -420,7 +430,7 @@ export function DashboardScreen({ navigation }: Props) {
                     style={{
                       color: DASHBOARD_THEME.secondaryText,
                       fontSize: 10,
-                      fontWeight: "700",
+                      fontWeight: "500",
                     }}
                   >
                     {getLocalizedText(label, locale)}
@@ -436,7 +446,7 @@ export function DashboardScreen({ navigation }: Props) {
             style={{
               color: DASHBOARD_THEME.tertiaryText,
               fontSize: 10,
-              fontWeight: "700",
+              fontWeight: "500",
               letterSpacing: 1.6,
               textTransform: "uppercase",
               paddingLeft: 8,
@@ -454,12 +464,13 @@ export function DashboardScreen({ navigation }: Props) {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                borderRadius: 16,
+                borderRadius: 32,
                 borderWidth: 1,
                 borderColor: DASHBOARD_THEME.border,
                 backgroundColor: DASHBOARD_THEME.surface,
                 padding: 12,
                 marginBottom: 10,
+                ...zenGlassEffect,
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
@@ -485,19 +496,19 @@ export function DashboardScreen({ navigation }: Props) {
                 <View style={{ flex: 1, paddingRight: 10 }}>
                   <Text
                     style={{
-                      color: DASHBOARD_THEME.primaryText,
-                      fontSize: 14,
-                      fontWeight: "600",
-                      marginBottom: 2,
-                    }}
-                  >
+                    color: DASHBOARD_THEME.primaryText,
+                    fontSize: 14,
+                    fontWeight: "500",
+                    marginBottom: 2,
+                  }}
+                >
                     {getLocalizedText(routine.title, locale)}
                   </Text>
                   <Text
                     style={{
                       color: DASHBOARD_THEME.secondaryText,
                       fontSize: 10,
-                      fontWeight: "700",
+                      fontWeight: "500",
                       letterSpacing: 0.9,
                       textTransform: "uppercase",
                     }}
@@ -513,7 +524,7 @@ export function DashboardScreen({ navigation }: Props) {
                   style={{
                     color: DASHBOARD_THEME.secondaryText,
                     fontSize: 11,
-                    fontWeight: "700",
+                    fontWeight: "500",
                     marginLeft: 6,
                   }}
                 >
@@ -534,7 +545,7 @@ export function DashboardScreen({ navigation }: Props) {
             style={{
               color: DASHBOARD_THEME.tertiaryText,
               fontSize: 11,
-              fontWeight: "700",
+              fontWeight: "500",
               letterSpacing: 1,
               textTransform: "uppercase",
             }}

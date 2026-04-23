@@ -6,7 +6,11 @@ import { Activity, ChevronRight } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { type DimensionValue, Pressable, Text, View } from "react-native";
 import { messages } from "../i18n/messages";
-import { zenAmbientGlow, zenDarkTheme } from "../theme/zen-dark";
+import {
+  zenAmbientGlow,
+  zenDarkTheme,
+  zenGlassEffect,
+} from "../theme/zen-dark";
 import type { LocaleCode, PainRegion } from "../types/app";
 import { getLocalizedText } from "../utils/localize";
 
@@ -33,7 +37,7 @@ const SCANNER_THEME = {
   background: zenDarkTheme.canvas,
   surface: zenDarkTheme.surfaceGlass,
   surfaceAlt: zenDarkTheme.cardMuted,
-  panel: zenDarkTheme.surface,
+  panel: zenDarkTheme.surfaceGlass,
   border: zenDarkTheme.border,
   borderStrong: zenDarkTheme.borderMuted,
   accent: zenDarkTheme.accent,
@@ -41,8 +45,8 @@ const SCANNER_THEME = {
   primaryText: zenDarkTheme.textPrimary,
   secondaryText: zenDarkTheme.textSecondary,
   tertiaryText: zenDarkTheme.textTertiary,
-  figureIdle: "#262B33",
-  figureStroke: "#343A45",
+  figureIdle: "#475569",
+  figureStroke: "#64748B",
 } as const;
 
 const REGION_ORDER: ScannerRegionId[] = [
@@ -62,9 +66,17 @@ const REGION_ORDER: ScannerRegionId[] = [
   "feet",
 ];
 
-const BODY_SIZE = {
-  width: 156,
-  height: 300,
+const BODY_LAYOUTS = {
+  compact: {
+    width: 144,
+    height: 292,
+    scale: 0.74,
+  },
+  focus: {
+    width: 182,
+    height: 346,
+    scale: 0.88,
+  },
 } as const;
 
 const HOTSPOTS: Record<ScannerView, Hotspot[]> = {
@@ -250,7 +262,7 @@ function BodyHotspots({
               backgroundColor: isSelected
                 ? zenDarkTheme.accentSoft
                 : pressed
-                  ? "rgba(15,23,42,0.42)"
+                  ? "rgba(255,255,255,0.04)"
                   : "transparent",
               borderWidth: isSelected ? 1 : 0,
               borderColor: isSelected ? SCANNER_THEME.accent : "transparent",
@@ -269,6 +281,8 @@ function BodyFigure({
   selectedParts,
   onPress,
   onToggle,
+  layout,
+  showLabel,
 }: {
   data: ExtendedBodyPart[];
   label: string;
@@ -276,48 +290,84 @@ function BodyFigure({
   selectedParts: ScannerRegionId[];
   onPress: (slug?: Slug) => void;
   onToggle: (part: ScannerRegionId) => void;
+  layout: keyof typeof BODY_LAYOUTS;
+  showLabel: boolean;
 }) {
+  const size = BODY_LAYOUTS[layout];
+
   return (
-    <View style={{ alignItems: "center", width: BODY_SIZE.width + 6 }}>
-      <Text
-        style={{
-          color: SCANNER_THEME.tertiaryText,
-          fontSize: 10,
-          fontWeight: "700",
-          letterSpacing: 1.6,
-          marginBottom: 10,
-          textTransform: "uppercase",
-        }}
-      >
-        {label}
-      </Text>
+    <View style={{ alignItems: "center", width: size.width + 28 }}>
+      {showLabel ? (
+        <Text
+          style={{
+            color: SCANNER_THEME.tertiaryText,
+            fontSize: 10,
+            fontWeight: "500",
+            letterSpacing: 1.6,
+            marginBottom: 10,
+            textTransform: "uppercase",
+          }}
+        >
+          {label}
+        </Text>
+      ) : null}
 
       <View
         style={{
-          width: BODY_SIZE.width,
-          height: BODY_SIZE.height,
-          position: "relative",
+          width: size.width + 18,
+          height: size.height + 14,
+          borderRadius: 30,
+          borderWidth: 1,
+          borderColor: "rgba(255,255,255,0.05)",
+          backgroundColor: "rgba(15,23,42,0.34)",
           alignItems: "center",
           justifyContent: "center",
+          overflow: "hidden",
+          position: "relative",
         }}
       >
-        <Body
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            top: 18,
+            width: size.width * 0.58,
+            height: size.width * 0.58,
+            borderRadius: 999,
+            backgroundColor: selectedParts.length > 0
+              ? zenDarkTheme.accentGlow
+              : "rgba(148,163,184,0.10)",
+            opacity: selectedParts.length > 0 ? 0.14 : 0.1,
+          }}
+        />
+
+        <View
+          style={{
+            width: size.width,
+            height: size.height,
+            position: "relative",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Body
           border="none"
           data={data}
           defaultFill={SCANNER_THEME.figureIdle}
           defaultStroke={SCANNER_THEME.figureStroke}
           defaultStrokeWidth={1}
           gender="male"
-          scale={0.72}
+          scale={size.scale}
           side={side}
           onBodyPartPress={(part) => onPress(part.slug)}
         />
 
-        <BodyHotspots
-          selectedParts={selectedParts}
-          side={side}
-          onToggle={onToggle}
-        />
+          <BodyHotspots
+            selectedParts={selectedParts}
+            side={side}
+            onToggle={onToggle}
+          />
+        </View>
       </View>
     </View>
   );
@@ -395,10 +445,10 @@ export function BiomechanicalScanner({
 
   return (
     <View className="flex-1">
-      <View className="mb-3">
+      <View className="mb-4">
         <View
           style={{
-            marginBottom: 10,
+            marginBottom: 12,
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
@@ -407,8 +457,8 @@ export function BiomechanicalScanner({
           <View className="flex-row items-center">
             <View
               style={{
-                width: 6,
-                height: 6,
+                width: 7,
+                height: 7,
                 borderRadius: 999,
                 backgroundColor: SCANNER_THEME.accent,
                 marginRight: 8,
@@ -418,8 +468,8 @@ export function BiomechanicalScanner({
               style={{
                 color: SCANNER_THEME.accent,
                 fontSize: 10,
-                fontWeight: "700",
-                letterSpacing: 2,
+                fontWeight: "500",
+                letterSpacing: 1.8,
                 textTransform: "uppercase",
               }}
             >
@@ -439,6 +489,7 @@ export function BiomechanicalScanner({
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
+              ...zenGlassEffect,
             }}
           >
             <Activity color={SCANNER_THEME.accent} size={12} />
@@ -446,7 +497,7 @@ export function BiomechanicalScanner({
               style={{
                 color: SCANNER_THEME.primaryText,
                 fontSize: 12,
-                fontWeight: "700",
+                fontWeight: "500",
                 marginLeft: 6,
               }}
             >
@@ -458,10 +509,10 @@ export function BiomechanicalScanner({
         <Text
           style={{
             color: SCANNER_THEME.primaryText,
-            fontSize: 24,
-            fontWeight: "800",
-            lineHeight: 30,
-            maxWidth: 280,
+            fontSize: 30,
+            fontWeight: "400",
+            lineHeight: 38,
+            maxWidth: 320,
           }}
         >
           {copy.painMap.titleLead}{" "}
@@ -469,30 +520,72 @@ export function BiomechanicalScanner({
             {copy.painMap.titleAccent}
           </Text>
         </Text>
+
+        <Text
+          style={{
+            marginTop: 10,
+            maxWidth: 320,
+            color: SCANNER_THEME.secondaryText,
+            fontSize: 15,
+            lineHeight: 22,
+            fontWeight: "400",
+          }}
+        >
+          {copy.painMap.subtitle}
+        </Text>
       </View>
 
       <View
         style={{
           flex: 1,
           minHeight: 0,
-          borderRadius: 24,
+          borderRadius: 32,
           borderWidth: 1,
           borderColor: SCANNER_THEME.borderStrong,
           backgroundColor: SCANNER_THEME.panel,
-          paddingHorizontal: 14,
-          paddingTop: 12,
-          paddingBottom: 8,
+          paddingHorizontal: 16,
+          paddingTop: 14,
+          paddingBottom: 10,
+          overflow: "hidden",
+          ...zenGlassEffect,
         }}
       >
         <View
+          pointerEvents="none"
           style={{
-            marginBottom: 14,
+            position: "absolute",
+            top: -42,
+            right: -56,
+            width: 150,
+            height: 150,
+            borderRadius: 999,
+            backgroundColor: zenDarkTheme.accentGlow,
+            opacity: 0.18,
+          }}
+        />
+        <View
+          pointerEvents="none"
+          style={{
+            position: "absolute",
+            bottom: -70,
+            left: -38,
+            width: 160,
+            height: 160,
+            borderRadius: 999,
+            backgroundColor: "rgba(148,163,184,0.08)",
+          }}
+        />
+
+        <View
+          style={{
+            marginBottom: 18,
             flexDirection: "row",
-            borderRadius: 14,
+            borderRadius: 28,
             borderWidth: 1,
             borderColor: SCANNER_THEME.border,
             backgroundColor: SCANNER_THEME.surfaceAlt,
             padding: 4,
+            ...zenGlassEffect,
           }}
         >
           {([
@@ -508,15 +601,15 @@ export function BiomechanicalScanner({
                 onPress={() => setFigureMode(option.id)}
                 style={{
                   flex: 1,
-                  borderRadius: 10,
+                  borderRadius: 24,
                   borderWidth: 1,
                   borderColor: active
-                    ? "rgba(16,185,129,0.55)"
+                    ? "rgba(94,234,212,0.45)"
                     : "transparent",
-          backgroundColor: active
+                  backgroundColor: active
                     ? zenDarkTheme.accentSoft
                     : "transparent",
-                  paddingVertical: 8,
+                  paddingVertical: 10,
                 }}
               >
                 <Text
@@ -525,7 +618,7 @@ export function BiomechanicalScanner({
                       ? SCANNER_THEME.accent
                       : SCANNER_THEME.tertiaryText,
                     fontSize: 11,
-                    fontWeight: "800",
+                    fontWeight: "500",
                     letterSpacing: 1.1,
                     textAlign: "center",
                     textTransform: "uppercase",
@@ -545,12 +638,15 @@ export function BiomechanicalScanner({
             alignItems: "center",
             justifyContent: "center",
             flexDirection: figureMode === "both" ? "row" : "column",
+            paddingBottom: 4,
           }}
         >
           {(figureMode === "both" || figureMode === "front") && (
             <BodyFigure
               data={frontData}
               label={copy.painMap.front}
+              layout={figureMode === "both" ? "compact" : "focus"}
+              showLabel={figureMode !== "both"}
               side="front"
               selectedParts={selectedParts}
               onPress={(slug) => handleBodyPartPress("front", slug)}
@@ -562,8 +658,9 @@ export function BiomechanicalScanner({
             <View
               style={{
                 width: 1,
-                alignSelf: "stretch",
-                marginHorizontal: 4,
+                height: "72%",
+                alignSelf: "center",
+                marginHorizontal: 6,
                 backgroundColor: SCANNER_THEME.border,
               }}
             />
@@ -573,6 +670,8 @@ export function BiomechanicalScanner({
             <BodyFigure
               data={backData}
               label={copy.painMap.back}
+              layout={figureMode === "both" ? "compact" : "focus"}
+              showLabel={figureMode !== "both"}
               side="back"
               selectedParts={selectedParts}
               onPress={(slug) => handleBodyPartPress("back", slug)}
@@ -584,28 +683,29 @@ export function BiomechanicalScanner({
 
       <View
         style={{
-          marginTop: 10,
-          paddingTop: 10,
-          paddingBottom: 8,
+          marginTop: 14,
+          paddingTop: 6,
+          paddingBottom: 4,
         }}
       >
         <View
           style={{
-            marginBottom: 8,
-            borderRadius: 16,
+            marginBottom: 12,
+            borderRadius: 28,
             borderWidth: 1,
             borderColor: SCANNER_THEME.border,
             backgroundColor: SCANNER_THEME.surface,
-            paddingHorizontal: 12,
-            paddingVertical: 10,
+            paddingHorizontal: 14,
+            paddingVertical: 12,
+            ...zenGlassEffect,
           }}
         >
           <Text
             style={{
               color: SCANNER_THEME.primaryText,
               fontSize: 13,
-              fontWeight: "700",
-              marginBottom: 3,
+              fontWeight: "500",
+              marginBottom: 4,
             }}
           >
             {copy.painMap.continueTitle}
@@ -613,8 +713,9 @@ export function BiomechanicalScanner({
           <Text
             style={{
               color: SCANNER_THEME.secondaryText,
-              fontSize: 11,
-              lineHeight: 15,
+              fontSize: 12,
+              lineHeight: 18,
+              fontWeight: "400",
             }}
           >
             {selectedParts.length > 0
@@ -627,25 +728,32 @@ export function BiomechanicalScanner({
           disabled={selectedParts.length === 0}
           onPress={() => onConfirm(selectedParts)}
           style={({ pressed }) => ({
+            width: "100%",
             minHeight: 58,
-            borderRadius: 18,
-            borderWidth: 1.5,
-            borderColor: SCANNER_THEME.accentStroke,
-            backgroundColor: SCANNER_THEME.accent,
+            borderRadius: 30,
+            borderWidth: 1,
+            borderColor: selectedParts.length > 0
+              ? SCANNER_THEME.accent
+              : SCANNER_THEME.border,
+            backgroundColor: selectedParts.length > 0
+              ? "rgba(94,234,212,0.16)"
+              : "rgba(255,255,255,0.035)",
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "center",
-            opacity: selectedParts.length === 0 ? 0.45 : pressed ? 0.92 : 1,
+            opacity: pressed && selectedParts.length > 0 ? 0.92 : 1,
             paddingHorizontal: 16,
-            shadowColor: SCANNER_THEME.accent,
-            ...zenAmbientGlow(0.16, 22),
+            ...zenAmbientGlow(selectedParts.length > 0 ? 0.16 : 0.04, 22),
+            ...zenGlassEffect,
           })}
         >
           <Text
             style={{
-              color: SCANNER_THEME.primaryText,
+              color: selectedParts.length > 0
+                ? SCANNER_THEME.primaryText
+                : SCANNER_THEME.secondaryText,
               fontSize: 16,
-              fontWeight: "800",
+              fontWeight: "500",
               marginRight: 12,
               letterSpacing: 0.3,
             }}
@@ -659,11 +767,15 @@ export function BiomechanicalScanner({
               borderRadius: 999,
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: zenDarkTheme.whiteSoft,
+              backgroundColor: selectedParts.length > 0
+                ? zenDarkTheme.whiteSoft
+                : "rgba(255,255,255,0.06)",
             }}
           >
             <ChevronRight
-              color={SCANNER_THEME.primaryText}
+              color={selectedParts.length > 0
+                ? SCANNER_THEME.primaryText
+                : SCANNER_THEME.secondaryText}
               size={17}
             />
           </View>

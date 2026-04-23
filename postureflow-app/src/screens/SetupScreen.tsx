@@ -4,13 +4,15 @@ import {
   Cpu,
   Eye,
 } from "lucide-react-native";
+import { useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { LanguageToggle } from "../components/LanguageToggle";
 import { PrimaryButton } from "../components/PrimaryButton";
+import { ScreenAtmosphere } from "../components/ScreenAtmosphere";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
-import { zenDarkTheme } from "../theme/zen-dark";
+import { zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 import { getLocalizedText } from "../utils/localize";
 
@@ -39,6 +41,11 @@ export function SetupScreen({ navigation }: Props) {
   const { bootstrap, locale, setupSelection, setSetupSelection, toggleLocale } =
     useAppModel();
   const copy = messages[locale];
+  const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
+  const availableOptionIds = bootstrap?.onboarding.setupOptions.map((option) => option.id) ?? [];
+  const syncedSelection = setupSelection.filter((id) =>
+    availableOptionIds.includes(id),
+  );
 
   if (!bootstrap) {
     return (
@@ -63,21 +70,22 @@ export function SetupScreen({ navigation }: Props) {
     );
   }
 
-  const availableOptionIds = bootstrap.onboarding.setupOptions.map((option) => option.id);
-  const activeSelection = setupSelection.filter((id) =>
-    availableOptionIds.includes(id),
-  );
+  const persistedSelectionId = syncedSelection[0] ?? null;
+  const activeSelectionId = selectedOptionId ?? persistedSelectionId;
+  const activeSelection = activeSelectionId ? [activeSelectionId] : [];
 
-  const toggleOption = (id: string) => {
-    setSetupSelection(
-      activeSelection.includes(id)
-        ? activeSelection.filter((value) => value !== id)
-        : [id],
-    );
+  const selectOption = (id: string) => {
+    if (activeSelectionId === id) {
+      return;
+    }
+
+    setSelectedOptionId(id);
+    setSetupSelection([id]);
   };
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: SCREEN_THEME.background }}>
+      <ScreenAtmosphere />
       <ScrollView
         className="flex-1"
         contentContainerStyle={{
@@ -86,8 +94,8 @@ export function SetupScreen({ navigation }: Props) {
           alignSelf: "center",
           width: "100%",
           paddingHorizontal: 24,
-          paddingTop: 20,
-          paddingBottom: 28,
+          paddingTop: 24,
+          paddingBottom: 32,
         }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -106,18 +114,19 @@ export function SetupScreen({ navigation }: Props) {
                 marginBottom: 16,
                 alignSelf: "flex-start",
                 borderRadius: 999,
-                backgroundColor: SCREEN_THEME.surfaceAlt,
+                backgroundColor: SCREEN_THEME.surface,
                 borderWidth: 1,
                 borderColor: SCREEN_THEME.border,
                 paddingHorizontal: 12,
                 paddingVertical: 6,
+                ...zenGlassEffect,
               }}
             >
               <Text
                 style={{
                   color: SCREEN_THEME.accent,
                   fontSize: 11,
-                  fontWeight: "700",
+                  fontWeight: "500",
                   letterSpacing: 1.2,
                   textTransform: "uppercase",
                 }}
@@ -129,9 +138,9 @@ export function SetupScreen({ navigation }: Props) {
             <Text
               style={{
                 color: SCREEN_THEME.primaryText,
-                fontSize: 29,
-                fontWeight: "700",
-                lineHeight: 34,
+                fontSize: 30,
+                fontWeight: "400",
+                lineHeight: 38,
               }}
             >
               {copy.setup.title}
@@ -144,6 +153,7 @@ export function SetupScreen({ navigation }: Props) {
                 lineHeight: 22,
                 marginTop: 10,
                 maxWidth: 310,
+                fontWeight: "400",
               }}
             >
               {copy.setup.subtitle}
@@ -165,31 +175,33 @@ export function SetupScreen({ navigation }: Props) {
             return (
               <Pressable
                 key={option.id}
-                onPress={() => toggleOption(option.id)}
+                onPress={() => selectOption(option.id)}
                 style={({ pressed }) => ({
                   marginBottom:
                     index === bootstrap.onboarding.setupOptions.length - 1 ? 0 : 14,
-                  borderRadius: 24,
+                  borderRadius: 32,
                   borderWidth: 1,
                   borderColor: isSelected
                     ? SCREEN_THEME.accentStroke
                     : SCREEN_THEME.border,
                   backgroundColor: isSelected
-                    ? SCREEN_THEME.surfaceAlt
+                    ? "rgba(94,234,212,0.10)"
                     : SCREEN_THEME.surface,
                   shadowColor: SCREEN_THEME.accent,
-                  shadowOpacity: isSelected ? 0.22 : 0,
-                  shadowRadius: 18,
-                  shadowOffset: { width: 0, height: 8 },
-                  elevation: isSelected ? 6 : 0,
+                  shadowOpacity: isSelected ? 0.12 : 0.04,
+                  shadowRadius: isSelected ? 26 : 20,
+                  shadowOffset: { width: 0, height: 14 },
+                  elevation: isSelected ? 5 : 2,
                   opacity: pressed ? 0.94 : 1,
+                  overflow: "hidden",
                 })}
               >
                 <View
                   style={{
-                    borderRadius: 24,
-                    paddingHorizontal: 18,
-                    paddingVertical: 18,
+                    borderRadius: 32,
+                    paddingHorizontal: 20,
+                    paddingVertical: 20,
+                    ...zenGlassEffect,
                   }}
                 >
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -197,13 +209,13 @@ export function SetupScreen({ navigation }: Props) {
                       style={{
                         width: 62,
                         height: 62,
-                        borderRadius: 20,
+                        borderRadius: 24,
                         backgroundColor: isSelected
                           ? zenDarkTheme.accentSoft
                           : zenDarkTheme.cardMuted,
                         borderWidth: 1,
                         borderColor: isSelected
-                          ? "rgba(52,211,153,0.22)"
+                          ? "rgba(94,234,212,0.24)"
                           : SCREEN_THEME.border,
                         alignItems: "center",
                         justifyContent: "center",
@@ -222,8 +234,8 @@ export function SetupScreen({ navigation }: Props) {
                         style={{
                           color: SCREEN_THEME.primaryText,
                           fontSize: 18,
-                          fontWeight: "600",
-                          lineHeight: 23,
+                          fontWeight: "500",
+                          lineHeight: 24,
                           marginBottom: 5,
                         }}
                       >
@@ -234,6 +246,7 @@ export function SetupScreen({ navigation }: Props) {
                           color: SCREEN_THEME.secondaryText,
                           fontSize: 13,
                           lineHeight: 19,
+                          fontWeight: "400",
                         }}
                       >
                         {getLocalizedText(option.description, locale)}
@@ -242,15 +255,15 @@ export function SetupScreen({ navigation }: Props) {
 
                     <View
                       style={{
-                        width: 28,
-                        height: 28,
+                        width: 30,
+                        height: 30,
                         borderRadius: 999,
-                        borderWidth: 1.5,
+                        borderWidth: 1,
                         borderColor: isSelected
                           ? SCREEN_THEME.accentStroke
                           : SCREEN_THEME.borderStrong,
                         backgroundColor: isSelected
-                          ? "rgba(16,185,129,0.12)"
+                          ? zenDarkTheme.accentSoft
                           : "transparent",
                         alignItems: "center",
                         justifyContent: "center",
@@ -274,7 +287,12 @@ export function SetupScreen({ navigation }: Props) {
         <View style={{ paddingTop: 22 }}>
           <PrimaryButton
             label={copy.common.generateProgram}
-            onPress={() => navigation.navigate("Analyzing")}
+            onPress={() => {
+              if (activeSelectionId) {
+                setSetupSelection([activeSelectionId]);
+              }
+              navigation.navigate("Analyzing");
+            }}
             variant="teal"
             disabled={activeSelection.length === 0}
           />

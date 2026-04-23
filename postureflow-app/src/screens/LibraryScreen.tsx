@@ -17,9 +17,10 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
 import { BentoCard } from "../components/BentoCard";
+import { ScreenAtmosphere } from "../components/ScreenAtmosphere";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
-import { zenDarkTheme } from "../theme/zen-dark";
+import { zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 import { getLocalizedText } from "../utils/localize";
 
@@ -51,6 +52,7 @@ export function LibraryScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: zenDarkTheme.canvas }}>
+      <ScreenAtmosphere />
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 24,
@@ -80,6 +82,7 @@ export function LibraryScreen({ navigation }: Props) {
               borderWidth: 1,
               borderColor: zenDarkTheme.border,
               backgroundColor: zenDarkTheme.surfaceGlass,
+              ...zenGlassEffect,
             }}
           >
             <ChevronLeft color={zenDarkTheme.textSecondary} size={20} />
@@ -89,7 +92,7 @@ export function LibraryScreen({ navigation }: Props) {
             style={{
               flex: 1,
               fontSize: 30,
-              fontWeight: "600",
+              fontWeight: "400",
               letterSpacing: -0.6,
               color: zenDarkTheme.textPrimary,
             }}
@@ -107,6 +110,7 @@ export function LibraryScreen({ navigation }: Props) {
               borderWidth: 1,
               borderColor: zenDarkTheme.border,
               backgroundColor: zenDarkTheme.surfaceGlass,
+              ...zenGlassEffect,
             }}
           >
             <CloudOff color={zenDarkTheme.accent} size={18} />
@@ -141,7 +145,7 @@ export function LibraryScreen({ navigation }: Props) {
                 <Text
                   style={{
                     fontSize: 10,
-                    fontWeight: "700",
+                    fontWeight: "500",
                     letterSpacing: 1,
                     textTransform: "uppercase",
                     color: zenDarkTheme.textTertiary,
@@ -152,7 +156,7 @@ export function LibraryScreen({ navigation }: Props) {
                 <Text
                   style={{
                     fontSize: 12,
-                    fontWeight: "600",
+                    fontWeight: "500",
                     color: zenDarkTheme.textPrimary,
                   }}
                 >
@@ -210,7 +214,7 @@ export function LibraryScreen({ navigation }: Props) {
                       style={{
                         color: zenDarkTheme.textPrimary,
                         fontSize: 16,
-                        fontWeight: "600",
+                        fontWeight: "500",
                         lineHeight: 20,
                       }}
                     >
@@ -221,7 +225,7 @@ export function LibraryScreen({ navigation }: Props) {
                         marginTop: 4,
                         color: zenDarkTheme.textSecondary,
                         fontSize: 12,
-                        fontWeight: "500",
+                        fontWeight: "400",
                       }}
                     >
                       {`${getLocalizedText(routine.durationLabel, locale)} | ${routine.sizeLabel}`}
@@ -257,6 +261,7 @@ export function LibraryScreen({ navigation }: Props) {
                         justifyContent: "center",
                         borderRadius: 999,
                         backgroundColor: zenDarkTheme.input,
+                        ...zenGlassEffect,
                       }}
                     >
                       {isDownloading ? (
