@@ -15,7 +15,7 @@ import { PrimaryButton } from "../components/PrimaryButton";
 import { ScreenAtmosphere } from "../components/ScreenAtmosphere";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
-import { zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
+import { zenAmbientGlow, zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 
 type Props = AppScreenProps<"VerifyEmail">;
@@ -108,7 +108,7 @@ export function VerifyEmailScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: zenDarkTheme.canvas }}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
       <ScreenAtmosphere />
 
       <KeyboardDismissView>
@@ -116,14 +116,21 @@ export function VerifyEmailScreen({ navigation }: Props) {
           style={{
             flex: 1,
             paddingHorizontal: 24,
-            paddingTop: 18,
-            paddingBottom: 28,
+            paddingTop: 24,
+            paddingBottom: 24,
             maxWidth: 460,
             alignSelf: "center",
             width: "100%",
           }}
         >
-          <View className="mb-8 flex-row items-center justify-between">
+          <View
+            style={{
+              marginBottom: 20,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
             <View
               style={{
                 borderRadius: 999,
@@ -151,48 +158,49 @@ export function VerifyEmailScreen({ navigation }: Props) {
             <LanguageToggle locale={locale} onToggle={() => void toggleLocale()} />
           </View>
 
-          <View className="flex-1 justify-center">
+          <View style={{ flex: 1, justifyContent: "center" }}>
             <View
               style={{
-                borderRadius: 30,
-                borderWidth: 1,
-                borderColor: zenDarkTheme.border,
+                borderRadius: 38,
                 backgroundColor: zenDarkTheme.surfaceGlass,
+                borderWidth: 1,
+                borderColor: zenDarkTheme.borderBright,
                 paddingHorizontal: 24,
-                paddingVertical: 28,
+                paddingVertical: 26,
+                ...zenAmbientGlow(0.12, 26),
                 ...zenGlassEffect,
               }}
             >
               <View
                 style={{
-                  marginBottom: 20,
-                  height: 56,
-                  width: 56,
+                  marginBottom: 18,
+                  height: 62,
+                  width: 62,
                   alignItems: "center",
                   justifyContent: "center",
-                  borderRadius: 999,
+                  borderRadius: 25,
                   backgroundColor: zenDarkTheme.accentSoft,
                 }}
               >
-                <ShieldCheck color={zenDarkTheme.accent} size={24} />
+                <ShieldCheck color={zenDarkTheme.accentStrong} size={26} />
               </View>
 
-              <Text style={{ fontSize: 30, fontWeight: "400", lineHeight: 40, color: zenDarkTheme.textPrimary }}>
+              <Text style={{ fontSize: 31, fontWeight: "900", lineHeight: 38, letterSpacing: -0.8, color: zenDarkTheme.textPrimary }}>
                 {copy.auth.verifyEmailTitle}
               </Text>
-              <Text style={{ marginTop: 12, fontSize: 14, lineHeight: 24, color: zenDarkTheme.textSecondary }}>
+              <Text style={{ marginTop: 10, fontSize: 15, fontWeight: "600", lineHeight: 23, color: zenDarkTheme.textSecondary }}>
                 {copy.auth.verifyEmailSubtitle}
               </Text>
 
               <View
                 style={{
-                  marginTop: 20,
-                  borderRadius: 16,
+                  marginTop: 18,
+                  borderRadius: 22,
                   borderWidth: 1,
                   borderColor: zenDarkTheme.border,
                   backgroundColor: zenDarkTheme.input,
                   paddingHorizontal: 16,
-                  paddingVertical: 16,
+                  paddingVertical: 14,
                 }}
               >
                 <Text
@@ -214,10 +222,10 @@ export function VerifyEmailScreen({ navigation }: Props) {
               {pendingVerification?.devVerificationCode ? (
                 <View
                   style={{
-                    marginTop: 16,
-                    borderRadius: 16,
+                    marginTop: 14,
+                  borderRadius: 22,
                     borderWidth: 1,
-                    borderColor: zenDarkTheme.border,
+                    borderColor: zenDarkTheme.borderMuted,
                     backgroundColor: zenDarkTheme.accentSoft,
                     paddingHorizontal: 16,
                     paddingVertical: 12,
@@ -248,7 +256,7 @@ export function VerifyEmailScreen({ navigation }: Props) {
                 </View>
               ) : null}
 
-              <View className="mt-5">
+              <View style={{ marginTop: 16 }}>
                 <Text
                   style={{
                     marginBottom: 8,
@@ -263,7 +271,7 @@ export function VerifyEmailScreen({ navigation }: Props) {
                 </Text>
                 <View
                   style={{
-                    borderRadius: 22,
+                  borderRadius: 24,
                     borderWidth: 1,
                     borderColor: zenDarkTheme.border,
                     backgroundColor: zenDarkTheme.input,
@@ -275,29 +283,47 @@ export function VerifyEmailScreen({ navigation }: Props) {
                     value={code}
                     onChangeText={setCode}
                     placeholder="123456"
-                    placeholderTextColor="#52525B"
+                    placeholderTextColor={zenDarkTheme.textTertiary}
                     keyboardType="number-pad"
                     style={{
                       color: zenDarkTheme.textPrimary,
-                      fontSize: 18,
+                      fontSize: 17,
                       letterSpacing: 6,
-                      paddingVertical: 16,
+                      paddingVertical: 14,
                     }}
                   />
                 </View>
               </View>
 
               {error ? (
-                <View className="mt-4 rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3">
-                  <Text className="text-sm font-medium text-red-200">{error}</Text>
+                <View
+                  style={{
+                    marginTop: 14,
+                    borderRadius: 18,
+                    borderWidth: 1,
+                    borderColor: zenDarkTheme.borderMuted,
+                    backgroundColor: zenDarkTheme.accentSoft,
+                    paddingHorizontal: 16,
+                    paddingVertical: 12,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: "400",
+                      color: zenDarkTheme.textPrimary,
+                    }}
+                  >
+                    {error}
+                  </Text>
                 </View>
               ) : null}
 
               {!isOnline ? (
                 <View
                   style={{
-                    marginTop: 16,
-                    borderRadius: 16,
+                    marginTop: 14,
+                    borderRadius: 18,
                     borderWidth: 1,
                     borderColor: zenDarkTheme.border,
                     backgroundColor: zenDarkTheme.input,
@@ -317,7 +343,7 @@ export function VerifyEmailScreen({ navigation }: Props) {
                 </View>
               ) : null}
 
-              <View className="mt-5">
+              <View style={{ marginTop: 16 }}>
                 <PrimaryButton
                   label={copy.auth.verifyButton}
                   onPress={() => void handleVerify()}
@@ -325,11 +351,20 @@ export function VerifyEmailScreen({ navigation }: Props) {
                 />
               </View>
 
-              <View className="mt-4 flex-row items-center justify-between">
+              <View
+                style={{
+                  marginTop: 16,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
                 <Pressable
                   onPress={() => void handleResend()}
                   disabled={!isOnline || submitting}
-                  className={!isOnline || submitting ? "opacity-50" : ""}
+                  style={({ pressed }) => ({
+                    opacity: !isOnline || submitting ? 0.5 : pressed ? 0.8 : 1,
+                  })}
                 >
                   {submitting ? (
                     <ActivityIndicator color={zenDarkTheme.accent} size="small" />

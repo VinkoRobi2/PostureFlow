@@ -26,6 +26,13 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, options: RequestOptions = {}) {
+  if (!API_BASE_URL) {
+    throw new ApiError(
+      0,
+      "Missing EXPO_PUBLIC_API_URL. Add it to your .env file before calling the backend.",
+    );
+  }
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
 
@@ -42,7 +49,13 @@ async function request<T>(path: string, options: RequestOptions = {}) {
     });
 
     const text = await response.text();
-    const data = text ? (JSON.parse(text) as T | { message?: string }) : undefined;
+    let data: T | { message?: string } | undefined;
+
+    try {
+      data = text ? (JSON.parse(text) as T | { message?: string }) : undefined;
+    } catch {
+      data = { message: text };
+    }
 
     if (!response.ok) {
       const message =
@@ -53,6 +66,19 @@ async function request<T>(path: string, options: RequestOptions = {}) {
     }
 
     return data as T;
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new ApiError(0, "Backend request timed out.");
+    }
+
+    throw new ApiError(
+      0,
+      error instanceof Error ? error.message : "Network request failed.",
+    );
   } finally {
     clearTimeout(timeout);
   }
@@ -81,16 +107,35 @@ export const api = {
       body: { email, password, locale },
     });
   },
-  loginWithGoogle(
-    email: string,
-    firstName: string,
-    locale: BackendLocale,
-    lastName?: string,
-    googleSubject?: string,
-  ) {
+  loginWithGoogle(payload: {
+    idToken: string;
+    locale: BackendLocale;
+    serverAuthCode?: string;
+    profile: {
+      googleId: string;
+      email: string;
+      name?: string;
+      firstName?: string;
+      lastName?: string;
+      photo?: string;
+    };
+  }) {
+    const { idToken, locale, profile, serverAuthCode } = payload;
+
     return request<AuthResult>("/auth/google", {
       method: "POST",
-      body: { email, firstName, lastName, googleSubject, locale },
+      body: {
+        idToken,
+        serverAuthCode,
+        locale,
+        profile,
+        email: profile.email,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        name: profile.name,
+        photo: profile.photo,
+        googleSubject: profile.googleId,
+      },
     });
   },
   verifyEmail(email: string, code: string, locale: BackendLocale) {

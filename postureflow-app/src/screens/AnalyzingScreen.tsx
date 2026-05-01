@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { ScreenAtmosphere } from "../components/ScreenAtmosphere";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
-import { zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
+import { zenAmbientGlow, zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 
 type Props = AppScreenProps<"Analyzing">;
@@ -63,56 +63,106 @@ export function AnalyzingScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: zenDarkTheme.canvas }}>
       <ScreenAtmosphere />
-      <View className="flex-1 items-center justify-center px-8">
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          paddingHorizontal: 26,
+          maxWidth: 460,
+          width: "100%",
+          alignSelf: "center",
+        }}
+      >
         <View
           style={{
-            marginBottom: 32,
-            height: 136,
-            width: 136,
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: 999,
+            borderRadius: 40,
+            backgroundColor: zenDarkTheme.surface,
             borderWidth: 1,
             borderColor: zenDarkTheme.border,
-            backgroundColor: zenDarkTheme.surfaceGlass,
-            ...zenGlassEffect,
-          }}
-        >
-          <ActivityIndicator color={zenDarkTheme.accent} size="large" />
-        </View>
-
-        <View className="h-14 items-center justify-center">
-          <Text
-            style={{
-              textAlign: "center",
-              fontSize: 18,
-              fontWeight: "400",
-              color: zenDarkTheme.textSecondary,
-            }}
-          >
-            {steps[stepIndex]}
-          </Text>
-        </View>
-
-        <View
-          style={{
-            marginTop: 32,
-            height: 8,
-            width: 224,
-            overflow: "hidden",
-            borderRadius: 999,
-            backgroundColor: zenDarkTheme.surfaceGlass,
+            padding: 28,
+            ...zenAmbientGlow(0.11, 28),
             ...zenGlassEffect,
           }}
         >
           <View
             style={{
-              height: "100%",
-              borderRadius: 999,
-              backgroundColor: zenDarkTheme.accent,
-              width: `${((stepIndex + 1) / steps.length) * 100}%`,
+              marginBottom: 24,
+              height: 96,
+              width: 96,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 32,
+              borderWidth: 1,
+              borderColor: zenDarkTheme.borderMuted,
+              backgroundColor: zenDarkTheme.accentSoft,
             }}
-          />
+          >
+            <ActivityIndicator color={zenDarkTheme.accentStrong} size="large" />
+          </View>
+
+          <Text
+            style={{
+              fontSize: 32,
+              fontWeight: "900",
+              lineHeight: 38,
+              letterSpacing: -0.8,
+              color: zenDarkTheme.textPrimary,
+            }}
+          >
+            {steps[stepIndex]}
+          </Text>
+
+          <Text
+            style={{
+              marginTop: 12,
+              color: zenDarkTheme.textSecondary,
+              fontSize: 14,
+              fontWeight: "600",
+              lineHeight: 22,
+            }}
+          >
+            {locale === "es"
+              ? "Estamos armando tu primer flujo segun tension, energia y tiempo sentado."
+              : "We are building your first flow from tension, energy, and screen time."}
+          </Text>
+
+          <View
+            style={{
+              marginTop: 26,
+              height: 11,
+              overflow: "hidden",
+              borderRadius: 999,
+              backgroundColor: zenDarkTheme.surfaceMuted,
+            }}
+          >
+            <View
+              style={{
+                height: "100%",
+                borderRadius: 999,
+                backgroundColor: zenDarkTheme.accent,
+                width: `${((stepIndex + 1) / steps.length) * 100}%`,
+              }}
+            />
+          </View>
+
+          <View style={{ marginTop: 22 }}>
+            {steps.map((step, index) => (
+              <Text
+                key={step}
+                style={{
+                  marginTop: index === 0 ? 0 : 8,
+                  color:
+                    index <= stepIndex
+                      ? zenDarkTheme.textPrimary
+                      : zenDarkTheme.textTertiary,
+                  fontSize: 13,
+                  fontWeight: index === stepIndex ? "900" : "600",
+                }}
+              >
+                {index + 1}. {step}
+              </Text>
+            ))}
+          </View>
         </View>
       </View>
     </SafeAreaView>

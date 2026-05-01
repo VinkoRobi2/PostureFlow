@@ -10,26 +10,32 @@ import {
 import { OnboardingFrame } from "../../components/onboarding/OnboardingFrame";
 import { createFallbackBootstrap } from "../../data/fallback-data";
 import { useAppModel } from "../../providers/app-provider";
-import {
-  onboardingCardStyle,
-  onboardingDarkTheme,
-  onboardingEyebrow,
-  onboardingGlow,
-} from "../../theme/onboarding-pro-dark";
+import { onboardingDarkTheme } from "../../theme/onboarding-pro-dark";
 import type { AppScreenProps } from "../../types/app";
+import { ff, rs, screenPadH, screenPadT } from "../../utils/responsive";
 import { getLocalizedOnboardingText } from "./content";
 
 type Props = AppScreenProps<"OnboardingAha">;
 
 const SESSION_MS = 15000;
+const BREATH_EASING = Easing.bezier(0.42, 0, 0.2, 1);
 
 export function OnboardingAhaScreen({ navigation }: Props) {
   const { bootstrap, locale, onboardingDraft, painSelection } = useAppModel();
   const copy = getLocalizedOnboardingText(locale);
   const resolvedBootstrap = bootstrap ?? createFallbackBootstrap(locale);
+  const [phaseIndex, setPhaseIndex] = useState(0);
   const [progress, setProgress] = useState(0);
   const [isDone, setDone] = useState(false);
-  const breathScale = useRef(new Animated.Value(0.92)).current;
+  const breathScale = useRef(new Animated.Value(0.9)).current;
+  const auraScale = useRef(new Animated.Value(0.94)).current;
+  const auraOpacity = useRef(new Animated.Value(0.42)).current;
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  const textOpacity = useRef(new Animated.Value(0)).current;
+  const textTranslate = useRef(new Animated.Value(12)).current;
+  const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const primaryZoneLabel =
     painSelection.length > 0
       ? resolvedBootstrap.onboarding.painRegions.find(
@@ -38,86 +44,265 @@ export function OnboardingAhaScreen({ navigation }: Props) {
       : locale === "es"
         ? "trapecio"
         : "trapezius";
+
   const personalizedTitle =
     locale === "es"
-      ? `Vamos a liberar esa tensión en ${primaryZoneLabel ?? "trapecio"}. Son solo 15 segundos. Acompáñame.`
-      : `Let's release that tension in your ${primaryZoneLabel ?? "trapezius"}. It only takes 15 seconds. Stay with me.`;
+      ? `Vamos a soltar la tension en ${primaryZoneLabel ?? "trapecio"} con una sola respiracion guiada.`
+      : `We are about to soften the tension in your ${primaryZoneLabel ?? "trapezius"} with one guided breath.`;
+
+  const breathingPhases = useMemo(
+    () =>
+      locale === "es"
+        ? [
+            {
+              label: "Inhala",
+              detail: "Deja que el pecho suba con suavidad.",
+              duration: 4000,
+              scale: 1.12,
+              auraScale: 1.14,
+              auraOpacity: 0.72,
+            },
+            {
+              label: "Exhala",
+              detail: "Afloja la mandibula y suelta el cuello.",
+              duration: 3500,
+              scale: 0.9,
+              auraScale: 0.96,
+              auraOpacity: 0.38,
+            },
+            {
+              label: "Inhala",
+              detail: "Abre hombros y espalda sin forzar.",
+              duration: 4000,
+              scale: 1.14,
+              auraScale: 1.18,
+              auraOpacity: 0.82,
+            },
+            {
+              label: "Exhala",
+              detail: "Deja caer el peso hacia abajo.",
+              duration: 3500,
+              scale: 0.88,
+              auraScale: 0.94,
+              auraOpacity: 0.32,
+            },
+          ]
+        : [
+            {
+              label: "Inhale",
+              detail: "Let the chest rise with ease.",
+              duration: 4000,
+              scale: 1.12,
+              auraScale: 1.14,
+              auraOpacity: 0.72,
+            },
+            {
+              label: "Exhale",
+              detail: "Release your jaw and soften the neck.",
+              duration: 3500,
+              scale: 0.9,
+              auraScale: 0.96,
+              auraOpacity: 0.38,
+            },
+            {
+              label: "Inhale",
+              detail: "Give your shoulders and back more room.",
+              duration: 4000,
+              scale: 1.14,
+              auraScale: 1.18,
+              auraOpacity: 0.82,
+            },
+            {
+              label: "Exhale",
+              detail: "Let the weight melt downward.",
+              duration: 3500,
+              scale: 0.88,
+              auraScale: 0.94,
+              auraOpacity: 0.32,
+            },
+          ],
+    [locale],
+  );
 
   useEffect(() => {
-    const breath = Animated.loop(
-      Animated.sequence([
-        Animated.timing(breathScale, {
-          toValue: 1.14,
-          duration: 2500,
-          easing: Easing.inOut(Easing.ease),
+    let cancelled = false;
+    const startedAt = Date.now();
+
+    const clearTimers = () => {
+      timeoutsRef.current.forEach((timer) => clearTimeout(timer));
+      timeoutsRef.current = [];
+    };
+
+    const animateText = (duration: number) => {
+      textOpacity.setValue(0);
+      textTranslate.setValue(12);
+
+      Animated.parallel([
+        Animated.timing(textOpacity, {
+          toValue: 1,
+          duration: 320,
+          easing: Easing.out(Easing.ease),
           useNativeDriver: true,
         }),
-        Animated.timing(breathScale, {
-          toValue: 0.92,
-          duration: 2500,
-          easing: Easing.inOut(Easing.ease),
+        Animated.timing(textTranslate, {
+          toValue: 0,
+          duration: 320,
+          easing: Easing.out(Easing.ease),
           useNativeDriver: true,
         }),
-      ]),
-    );
+      ]).start();
 
-    const startAt = Date.now();
-    breath.start();
+      const fadeDelay = Math.max(duration - 520, 300);
+      const fadeTimer = setTimeout(() => {
+        Animated.timing(textOpacity, {
+          toValue: 0.46,
+          duration: 320,
+          easing: Easing.out(Easing.ease),
+          useNativeDriver: true,
+        }).start();
+      }, fadeDelay);
 
-    const interval = setInterval(() => {
-      const ratio = Math.min((Date.now() - startAt) / SESSION_MS, 1);
-      setProgress(ratio);
+      timeoutsRef.current.push(fadeTimer);
+    };
 
-      if (ratio >= 1) {
-        clearInterval(interval);
-        breath.stop();
+    const playPhase = (index: number) => {
+      if (cancelled) {
+        return;
+      }
+
+      if (index >= breathingPhases.length) {
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+        }
+        setProgress(1);
         setDone(true);
         Vibration.vibrate(24);
+        return;
       }
-    }, 120);
+
+      const phase = breathingPhases[index];
+      setPhaseIndex(index);
+      animateText(phase.duration);
+
+      Animated.parallel([
+        Animated.timing(breathScale, {
+          toValue: phase.scale,
+          duration: phase.duration,
+          easing: BREATH_EASING,
+          useNativeDriver: true,
+        }),
+        Animated.timing(auraScale, {
+          toValue: phase.auraScale,
+          duration: phase.duration,
+          easing: BREATH_EASING,
+          useNativeDriver: true,
+        }),
+        Animated.timing(auraOpacity, {
+          toValue: phase.auraOpacity,
+          duration: phase.duration,
+          easing: BREATH_EASING,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        playPhase(index + 1);
+      });
+    };
+
+    intervalRef.current = setInterval(() => {
+      const ratio = Math.min((Date.now() - startedAt) / SESSION_MS, 1);
+      setProgress(ratio);
+
+      if (ratio >= 1 && intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }, 100);
+
+    playPhase(0);
 
     return () => {
-      clearInterval(interval);
-      breath.stop();
+      cancelled = true;
+      clearTimers();
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      breathScale.stopAnimation();
+      auraScale.stopAnimation();
+      auraOpacity.stopAnimation();
+      textOpacity.stopAnimation();
+      textTranslate.stopAnimation();
     };
-  }, [breathScale]);
+  }, [
+    auraOpacity,
+    auraScale,
+    breathScale,
+    breathingPhases,
+    textOpacity,
+    textTranslate,
+  ]);
 
-  const stepIndex = useMemo(() => {
-    if (progress < 0.34) {
-      return 0;
-    }
+  const currentPhase = breathingPhases[phaseIndex] ?? breathingPhases[0];
+  const elapsedSeconds = Math.min(Math.round(progress * 15), 15);
+  const progressWidth = progressAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0%", "100%"],
+  });
 
-    if (progress < 0.67) {
-      return 1;
-    }
-
-    return 2;
-  }, [progress]);
+  useEffect(() => {
+    Animated.timing(progressAnim, {
+      toValue: progress,
+      duration: 90,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: false,
+    }).start();
+  }, [progress, progressAnim]);
 
   return (
-    <OnboardingFrame>
-      <View style={{ flex: 1, justifyContent: "space-between" }}>
-        <View style={{ marginTop: 32 }}>
-          <Text style={onboardingEyebrow}>The Aha Moment</Text>
+    <OnboardingFrame
+      contentStyle={{
+        flex: 1,
+        paddingHorizontal: screenPadH,
+        paddingTop: screenPadT,
+        paddingBottom: rs(26),
+      }}
+    >
+      <View style={{ flex: 1 }}>
+        <View style={{ marginBottom: rs(28) }}>
           <Text
             style={{
-              marginTop: 12,
+              color: onboardingDarkTheme.accentStrong,
+              fontFamily: ff,
+              fontSize: rs(10),
+              fontWeight: "800",
+              letterSpacing: 2.5,
+              textTransform: "uppercase",
+            }}
+          >
+            {locale === "es" ? "RESET DE RESPIRACION" : "BREATHING RESET"}
+          </Text>
+          <Text
+            style={{
               color: onboardingDarkTheme.textPrimary,
-              fontSize: 28,
-              fontWeight: "400",
-              lineHeight: 36,
-              letterSpacing: -0.8,
+              fontFamily: ff,
+              marginTop: rs(12),
+              fontSize: rs(36),
+              fontWeight: "800",
+              lineHeight: rs(38),
+              letterSpacing: -1.2,
             }}
           >
             {copy.ahaGreeting(onboardingDraft.firstName)}
           </Text>
           <Text
             style={{
-              marginTop: 12,
-              color: onboardingDarkTheme.textSecondary,
-              fontSize: 17,
-              fontWeight: "400",
-              lineHeight: 28,
+              color: onboardingDarkTheme.textTertiary,
+              fontFamily: ff,
+              marginTop: rs(10),
+              maxWidth: rs(330),
+              fontSize: rs(13),
+              fontWeight: "500",
+              lineHeight: rs(20),
             }}
           >
             {personalizedTitle}
@@ -125,124 +310,172 @@ export function OnboardingAhaScreen({ navigation }: Props) {
         </View>
 
         <View
-          style={[
-            onboardingCardStyle,
-            onboardingGlow(0.14, 34),
-            {
-              paddingHorizontal: 24,
-              paddingVertical: 28,
-              alignItems: "center",
-              borderColor: onboardingDarkTheme.borderStrong,
-            },
-          ]}
+          style={{
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+            paddingVertical: rs(8),
+          }}
         >
-          <Animated.View
-            style={{
-              width: 188,
-              height: 188,
-              borderRadius: 999,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: onboardingDarkTheme.accentSoft,
-              borderWidth: 1,
-              borderColor: onboardingDarkTheme.borderStrong,
-              transform: [{ scale: breathScale }],
-            }}
-          >
+          <View style={{ width: "100%", alignItems: "center" }}>
             <View
               style={{
-                width: 132,
-                height: 132,
-                borderRadius: 999,
+                width: rs(230),
+                height: rs(230),
                 alignItems: "center",
                 justifyContent: "center",
-                backgroundColor: onboardingDarkTheme.card,
-                borderWidth: 1,
-                borderColor: onboardingDarkTheme.border,
+                position: "relative",
+              }}
+            >
+              <Animated.View
+                pointerEvents="none"
+                style={{
+                  position: "absolute",
+                  width: rs(230),
+                  height: rs(230),
+                  borderRadius: rs(999),
+                  backgroundColor: "#E0DBD3",
+                  transform: [{ scale: auraScale }],
+                }}
+              />
+              <Animated.View
+                pointerEvents="none"
+                style={{
+                  position: "absolute",
+                  width: rs(170),
+                  height: rs(170),
+                  borderRadius: rs(999),
+                  backgroundColor: "#D8D2C8",
+                  opacity: auraOpacity,
+                }}
+              />
+
+              <Animated.View
+                style={{
+                  width: rs(110),
+                  height: rs(110),
+                  borderRadius: rs(999),
+                  backgroundColor: onboardingDarkTheme.accentStrong,
+                  shadowColor: onboardingDarkTheme.accentStrong,
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: rs(40),
+                  elevation: 8,
+                  transform: [{ scale: breathScale }],
+                }}
+              />
+            </View>
+
+            <Animated.View
+              style={{
+                marginTop: rs(32),
+                alignItems: "center",
+                opacity: textOpacity,
+                transform: [{ translateY: textTranslate }],
               }}
             >
               <Text
                 style={{
-                  color: onboardingDarkTheme.accent,
-                  fontSize: 18,
-                  fontWeight: "500",
-                  letterSpacing: 1.2,
-                  textTransform: "uppercase",
+                  color: onboardingDarkTheme.textPrimary,
+                  fontFamily: ff,
+                  fontSize: rs(34),
+                  fontWeight: "800",
+                  letterSpacing: -1,
                 }}
               >
-                {copy.ahaSteps[stepIndex]}
+                {currentPhase.label}
               </Text>
-            </View>
-          </Animated.View>
-
-          <Text
-            style={{
-              marginTop: 26,
-              color: onboardingDarkTheme.textPrimary,
-              fontSize: 24,
-              fontWeight: "400",
-              letterSpacing: -0.6,
-            }}
-          >
-            {Math.round(progress * 15)} / 15s
-          </Text>
-
-          <View
-            style={{
-              marginTop: 18,
-              height: 6,
-              width: "100%",
-              borderRadius: 999,
-              overflow: "hidden",
-              backgroundColor: onboardingDarkTheme.divider,
-            }}
-          >
-            <View
-              style={{
-                height: "100%",
-                width: `${progress * 100}%`,
-                borderRadius: 999,
-                backgroundColor: onboardingDarkTheme.accent,
-              }}
-            />
+              <Text
+                style={{
+                  marginTop: rs(8),
+                  color: onboardingDarkTheme.textTertiary,
+                  fontFamily: ff,
+                  fontSize: rs(13),
+                  fontWeight: "500",
+                  lineHeight: rs(20),
+                  textAlign: "center",
+                  maxWidth: rs(270),
+                }}
+              >
+                {currentPhase.detail}
+              </Text>
+            </Animated.View>
           </View>
         </View>
 
-        <View>
-          <Text
+        <View style={{ paddingBottom: 0 }}>
+          <View
             style={{
-              marginBottom: 18,
-              color: onboardingDarkTheme.textTertiary,
-              fontSize: 14,
-              fontWeight: "400",
-              lineHeight: 22,
+              height: rs(3),
+              borderRadius: rs(2),
+              overflow: "hidden",
+              backgroundColor: onboardingDarkTheme.border,
             }}
           >
-            {copy.ahaFooter}
-          </Text>
+            <Animated.View
+              style={{
+                height: "100%",
+                width: progressWidth,
+                borderRadius: rs(2),
+                backgroundColor: onboardingDarkTheme.accentStrong,
+              }}
+            />
+          </View>
 
-          <Pressable
-            disabled={!isDone}
-            onPress={() => navigation.replace("OnboardingTrust")}
+          <View
             style={{
-              borderRadius: 32,
-              backgroundColor: isDone
-                ? onboardingDarkTheme.accentSoft
-                : onboardingDarkTheme.card,
-              borderWidth: 1,
-              borderColor: isDone
-                ? onboardingDarkTheme.borderStrong
-                : onboardingDarkTheme.border,
-              paddingVertical: 18,
-              opacity: isDone ? 1 : 0.5,
+              marginTop: rs(10),
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: rs(14),
             }}
           >
             <Text
               style={{
+                color: onboardingDarkTheme.textTertiary,
+                fontFamily: ff,
+                fontSize: rs(11),
+                fontWeight: "700",
+                letterSpacing: 0.5,
+              }}
+            >
+              {elapsedSeconds} / 15s
+            </Text>
+            <Text
+              numberOfLines={1}
+              style={{
+                color: onboardingDarkTheme.textTertiary,
+                flex: 1,
+                fontFamily: ff,
+                fontSize: rs(11),
+                fontStyle: "italic",
+                fontWeight: "400",
+                textAlign: "right",
+              }}
+            >
+              {copy.ahaFooter}
+            </Text>
+          </View>
+
+          <Pressable
+            disabled={!isDone}
+            onPress={() => navigation.replace("OnboardingTrust")}
+            style={({ pressed }) => ({
+              marginTop: rs(36),
+              backgroundColor: onboardingDarkTheme.textPrimary,
+              borderRadius: rs(18),
+              opacity: isDone ? (pressed ? 0.9 : 1) : 0.4,
+              paddingVertical: rs(18),
+            })}
+          >
+            <Text
+              style={{
                 textAlign: "center",
-                color: onboardingDarkTheme.textPrimary,
-                fontSize: 16,
-                fontWeight: "500",
+                color: onboardingDarkTheme.background,
+                fontFamily: ff,
+                fontSize: rs(16),
+                fontWeight: "700",
               }}
             >
               {copy.ahaCta}

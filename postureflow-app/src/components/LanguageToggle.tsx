@@ -1,7 +1,8 @@
 import { Languages } from "lucide-react-native";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
 import { LocaleCode } from "../types/app";
+import { ff, rs } from "../utils/responsive";
 
 type LanguageToggleProps = {
   locale: LocaleCode;
@@ -15,6 +16,8 @@ export function LanguageToggle({
   variant = "light",
 }: LanguageToggleProps) {
   const isDark = variant === "dark";
+  const activeBg = isDark ? zenDarkTheme.accentSoft : zenDarkTheme.accentSoft;
+  const inactiveText = isDark ? zenDarkTheme.textTertiary : zenDarkTheme.textSecondary;
 
   return (
     <Pressable
@@ -22,47 +25,67 @@ export function LanguageToggle({
       style={({ pressed }) => ({
         flexDirection: "row",
         alignItems: "center",
-        borderRadius: 999,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderWidth: 1,
-        borderColor: isDark ? zenDarkTheme.border : zenDarkTheme.borderMuted,
+        borderRadius: rs(999),
+        padding: rs(4),
+        borderWidth: StyleSheet.hairlineWidth,
+        borderColor: isDark ? zenDarkTheme.borderBright : zenDarkTheme.borderMuted,
         backgroundColor: isDark
           ? zenDarkTheme.surfaceGlass
-          : zenDarkTheme.textPrimary,
+          : zenDarkTheme.surfaceGlass,
         ...zenGlassEffect,
         opacity: pressed ? 0.85 : 1,
       })}
     >
       <Languages
-        color={isDark ? zenDarkTheme.textSecondary : zenDarkTheme.accent}
-        size={16}
+        color={inactiveText}
+        size={rs(14)}
+        strokeWidth={1.6}
       />
-      <View style={{ marginLeft: 8 }}>
-        <Text
-          style={{
-            fontSize: 10,
-            fontWeight: "500",
-            letterSpacing: 1,
-            textTransform: "uppercase",
-            color: isDark ? zenDarkTheme.textTertiary : zenDarkTheme.textSecondary,
-          }}
-        >
-          {locale === "en" ? "EN" : "ES"}
-        </Text>
-      </View>
-      <Text
+      <View
         style={{
-          marginLeft: 8,
-          fontSize: 12,
-          fontWeight: "500",
-          letterSpacing: 1,
-          textTransform: "uppercase",
-          color: isDark ? zenDarkTheme.accentStrong : zenDarkTheme.accent,
+          marginLeft: rs(6),
+          flexDirection: "row",
+          borderRadius: rs(999),
+          overflow: "hidden",
         }}
       >
-        {locale === "en" ? "ES" : "EN"}
-      </Text>
+        <Text
+          style={{
+            minWidth: rs(32),
+            paddingHorizontal: rs(8),
+            paddingVertical: rs(5),
+            borderRadius: rs(999),
+            backgroundColor: locale === "en" ? activeBg : "transparent",
+            fontFamily: ff,
+            fontSize: rs(10),
+            fontWeight: "700",
+            letterSpacing: 0.8,
+            textTransform: "uppercase",
+            textAlign: "center",
+            color: locale === "en" ? zenDarkTheme.textPrimary : inactiveText,
+          }}
+        >
+          EN
+        </Text>
+        <Text
+          style={{
+            minWidth: rs(32),
+            paddingHorizontal: rs(8),
+            paddingVertical: rs(5),
+            borderRadius: rs(999),
+            backgroundColor: locale === "es" ? activeBg : "transparent",
+            fontFamily: ff,
+            fontSize: rs(10),
+            fontWeight: "700",
+            letterSpacing: 0.8,
+            textTransform: "uppercase",
+            textAlign: "center",
+            color: locale === "es" ? zenDarkTheme.textPrimary : inactiveText,
+          }}
+        >
+          ES
+        </Text>
+      </View>
     </Pressable>
   );
 }

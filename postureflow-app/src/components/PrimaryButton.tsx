@@ -5,29 +5,24 @@ import {
   zenDarkTheme,
   zenGlassEffect,
 } from "../theme/zen-dark";
+import { ff, hairline, rs } from "../utils/responsive";
 
 type PrimaryButtonProps = {
   label: string;
   onPress: () => void;
-  variant?: "teal" | "dark";
+  variant?: "primary" | "dark";
   disabled?: boolean;
 };
 
 const shadowMap: Record<NonNullable<PrimaryButtonProps["variant"]>, ViewStyle> = {
-  teal: zenAmbientGlow(0.18, 26),
-  dark: {
-    shadowColor: zenDarkTheme.accent,
-    shadowOffset: { width: 0, height: 14 },
-    shadowOpacity: 0.06,
-    shadowRadius: 28,
-    elevation: 4,
-  },
+  primary: zenAmbientGlow(0.22, rs(24), zenDarkTheme.accent),
+  dark: zenAmbientGlow(0.18, rs(22)),
 };
 
 export function PrimaryButton({
   label,
   onPress,
-  variant = "teal",
+  variant = "primary",
   disabled = false,
 }: PrimaryButtonProps) {
   const isDark = variant === "dark";
@@ -36,45 +31,59 @@ export function PrimaryButton({
     <Pressable
       disabled={disabled}
       onPress={onPress}
-      className={`w-full flex-row items-center justify-between rounded-[32px] px-7 py-4 ${
-        disabled ? "opacity-50" : ""
-      }`}
       style={({ pressed }) => [
         shadowMap[variant],
         {
+          width: "100%",
+          minHeight: rs(64),
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          borderRadius: rs(28),
           backgroundColor: isDark
-            ? zenDarkTheme.surfaceGlass
-            : "rgba(94,234,212,0.16)",
-          borderWidth: 1,
-          borderColor: isDark ? zenDarkTheme.border : zenDarkTheme.accent,
+            ? zenDarkTheme.surface
+            : zenDarkTheme.buttonPrimary,
+          borderWidth: hairline,
+          borderColor: isDark
+            ? zenDarkTheme.borderBright
+            : zenDarkTheme.borderMuted,
           overflow: "hidden",
+          paddingHorizontal: rs(22),
+          paddingVertical: rs(14),
         },
         zenGlassEffect,
-        pressed ? { transform: [{ scale: 0.98 }] } : null,
+        disabled ? { opacity: 0.5 } : null,
+        pressed ? { transform: [{ scale: 0.99 }] } : null,
       ]}
     >
       <Text
         style={{
-          color: zenDarkTheme.textPrimary,
-          fontSize: 16,
-          fontWeight: "500",
+          color: isDark ? zenDarkTheme.textPrimary : zenDarkTheme.textInverse,
+          fontFamily: ff,
+          fontSize: rs(16),
+          fontWeight: "700",
+          letterSpacing: -0.1,
         }}
       >
         {label}
       </Text>
       <View
         style={{
-          width: 34,
-          height: 34,
-          borderRadius: 999,
+          width: rs(40),
+          height: rs(40),
+          borderRadius: rs(17),
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: isDark
-            ? zenDarkTheme.whiteSoft
-            : "rgba(255,255,255,0.12)",
+            ? zenDarkTheme.cardMuted
+            : "rgba(20,18,16,0.12)",
         }}
       >
-        <ArrowRight color={zenDarkTheme.textPrimary} size={18} />
+        <ArrowRight
+          color={isDark ? zenDarkTheme.textSecondary : zenDarkTheme.textInverse}
+          size={rs(18)}
+          strokeWidth={1.7}
+        />
       </View>
     </Pressable>
   );

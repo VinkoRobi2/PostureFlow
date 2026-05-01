@@ -7,7 +7,6 @@ import {
 } from "../theme/zen-dark";
 
 type BentoCardProps = PropsWithChildren<{
-  className?: string;
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
 }>;
@@ -16,7 +15,6 @@ const shadowStyle: ViewStyle = zenCardShadow;
 
 export function BentoCard({
   children,
-  className = "",
   onPress,
   style,
 }: BentoCardProps) {
@@ -24,13 +22,18 @@ export function BentoCard({
     return (
       <Pressable
         onPress={onPress}
-        className={`rounded-[32px] ${className}`}
         style={({ pressed }) => [
           shadowStyle,
           zenCardStyle,
-          { overflow: "hidden" },
+          {
+            borderRadius: 32,
+            overflow: "hidden",
+            backgroundColor: pressed
+              ? zenDarkTheme.surfacePressed
+              : zenDarkTheme.surfaceGlass,
+          },
           style,
-          pressed ? { transform: [{ scale: 0.985 }] } : null,
+          pressed ? { transform: [{ scale: 0.982 }] } : null,
         ]}
       >
         {children}
@@ -40,16 +43,15 @@ export function BentoCard({
 
   return (
     <View
-      className={`rounded-[32px] ${className}`}
       style={[
         shadowStyle,
         zenCardStyle,
-        style,
         {
-          borderColor: zenDarkTheme.border,
-          backgroundColor: zenDarkTheme.surfaceGlass,
+          borderRadius: 32,
+          backgroundColor: zenDarkTheme.surface,
           overflow: "hidden",
         },
+        style,
       ]}
     >
       {children}

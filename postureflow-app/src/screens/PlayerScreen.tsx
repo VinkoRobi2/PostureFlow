@@ -17,7 +17,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ScreenAtmosphere } from "../components/ScreenAtmosphere";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
-import { zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
+import { zenAmbientGlow, zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 import { formatSeconds, getLocalizedText } from "../utils/localize";
 
@@ -101,8 +101,19 @@ export function PlayerScreen({ navigation, route }: Props) {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: zenDarkTheme.canvas }}>
       <ScreenAtmosphere />
-      <View className="flex-1 px-4 py-4">
-        <View className="absolute left-6 right-6 top-6 z-20 flex-row items-center justify-between">
+      <View style={{ flex: 1, padding: 18 }}>
+        <View
+          style={{
+            position: "absolute",
+            left: 24,
+            right: 24,
+            top: 24,
+            zIndex: 20,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
           <Pressable
             onPress={() => navigation.goBack()}
             style={{
@@ -114,6 +125,7 @@ export function PlayerScreen({ navigation, route }: Props) {
               borderWidth: 1,
               borderColor: zenDarkTheme.border,
               backgroundColor: zenDarkTheme.surfaceGlass,
+              ...zenAmbientGlow(0.05, 14),
               ...zenGlassEffect,
             }}
           >
@@ -137,20 +149,30 @@ export function PlayerScreen({ navigation, route }: Props) {
           </View>
         </View>
 
-        <View className="mt-16 flex-1 items-center justify-center">
+        <View
+          style={{
+            marginTop: 64,
+            flex: 1,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
           <View
             style={{
               marginBottom: 24,
-              height: 440,
+              height: 434,
               width: "100%",
               overflow: "hidden",
-              borderRadius: 32,
+              borderRadius: 38,
               backgroundColor: zenDarkTheme.surface,
+              borderWidth: 1,
+              borderColor: zenDarkTheme.border,
+              ...zenAmbientGlow(0.1, 28),
             }}
           >
             <Image
               source={{ uri: routine.imageUrl }}
-              className="h-full w-full"
+              style={{ height: "100%", width: "100%" }}
               resizeMode="cover"
             />
 
@@ -161,7 +183,7 @@ export function PlayerScreen({ navigation, route }: Props) {
                   inset: 0,
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: "rgba(2,6,23,0.28)",
+                  backgroundColor: "rgba(20,18,16,0.28)",
                 }}
               >
                 <Pressable
@@ -172,7 +194,7 @@ export function PlayerScreen({ navigation, route }: Props) {
                     alignItems: "center",
                     justifyContent: "center",
                     borderRadius: 999,
-                    backgroundColor: zenDarkTheme.whiteSoft,
+                    backgroundColor: zenDarkTheme.sandSoft,
                   }}
                 >
                   <Play
@@ -188,18 +210,19 @@ export function PlayerScreen({ navigation, route }: Props) {
           <View
             style={{
               position: "absolute",
-              bottom: 160,
-              left: 20,
-              right: 20,
-              borderRadius: 32,
+              bottom: 150,
+              left: 18,
+              right: 18,
+              borderRadius: 30,
               borderWidth: 1,
               borderColor: zenDarkTheme.border,
               backgroundColor: zenDarkTheme.surfaceOverlay,
-              padding: 16,
+              padding: 18,
+              ...zenAmbientGlow(0.06, 18),
               ...zenGlassEffect,
             }}
           >
-            <View className="flex-row items-start">
+            <View style={{ flexDirection: "row", alignItems: "flex-start" }}>
               <View
                 style={{
                   marginRight: 12,
@@ -211,11 +234,11 @@ export function PlayerScreen({ navigation, route }: Props) {
               >
                 <Info color={zenDarkTheme.accent} size={16} />
               </View>
-              <View className="flex-1">
-                <Text style={{ fontSize: 12, fontWeight: "500", letterSpacing: 1, textTransform: "uppercase", color: zenDarkTheme.textPrimary }}>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 12, fontWeight: "800", letterSpacing: 1, textTransform: "uppercase", color: zenDarkTheme.textPrimary }}>
                   {copy.player.position}
                 </Text>
-                <Text style={{ marginTop: 4, fontSize: 14, fontWeight: "400", lineHeight: 20, color: zenDarkTheme.textSecondary }}>
+                <Text style={{ marginTop: 4, fontSize: 14, fontWeight: "600", lineHeight: 20, color: zenDarkTheme.textSecondary }}>
                   {getLocalizedText(routine.tipBody, locale)}
                 </Text>
               </View>
@@ -225,19 +248,27 @@ export function PlayerScreen({ navigation, route }: Props) {
 
         <View
           style={{
-            borderRadius: 32,
+            borderRadius: 34,
             borderWidth: 1,
             borderColor: zenDarkTheme.border,
             backgroundColor: zenDarkTheme.surfaceGlass,
             padding: 24,
+            ...zenAmbientGlow(0.1, 24),
             ...zenGlassEffect,
           }}
         >
-          <View className="mb-4 flex-row items-center justify-between">
-            <Text style={{ fontSize: 20, fontWeight: "400", letterSpacing: -0.4, color: zenDarkTheme.textPrimary }}>
+          <View
+            style={{
+              marginBottom: 16,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <Text style={{ flex: 1, paddingRight: 12, fontSize: 21, fontWeight: "900", letterSpacing: -0.5, color: zenDarkTheme.textPrimary }}>
               {getLocalizedText(routine.title, locale)}
             </Text>
-            <Text style={{ fontSize: 14, fontWeight: "400", color: zenDarkTheme.textTertiary }}>
+            <Text style={{ fontSize: 14, fontWeight: "700", color: zenDarkTheme.textTertiary }}>
               {getLocalizedText(routine.repetitionsLabel, locale)}
             </Text>
           </View>
@@ -245,10 +276,10 @@ export function PlayerScreen({ navigation, route }: Props) {
           <View
             style={{
               marginBottom: 24,
-              height: 8,
+              height: 10,
               overflow: "hidden",
               borderRadius: 999,
-              backgroundColor: zenDarkTheme.surface,
+              backgroundColor: zenDarkTheme.surfaceMuted,
             }}
           >
             <View
@@ -261,8 +292,14 @@ export function PlayerScreen({ navigation, route }: Props) {
             />
           </View>
 
-          <View className="flex-row items-center justify-center">
-            <Pressable className="mr-12">
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Pressable style={{ marginRight: 48 }}>
               <RotateCcw color={zenDarkTheme.textSecondary} size={22} />
             </Pressable>
 
@@ -274,16 +311,16 @@ export function PlayerScreen({ navigation, route }: Props) {
                 alignItems: "center",
                 justifyContent: "center",
                 borderRadius: 999,
-                backgroundColor: zenDarkTheme.accentSoft,
+                backgroundColor: zenDarkTheme.buttonPrimary,
                 borderWidth: 1,
                 borderColor: zenDarkTheme.borderMuted,
                 ...zenGlassEffect,
               }}
             >
               {isPlaying ? (
-                <Pause color={zenDarkTheme.textPrimary} fill={zenDarkTheme.textPrimary} size={24} />
+                <Pause color={zenDarkTheme.textInverse} fill={zenDarkTheme.textInverse} size={24} />
               ) : (
-                <Play color={zenDarkTheme.textPrimary} fill={zenDarkTheme.textPrimary} size={24} />
+                <Play color={zenDarkTheme.textInverse} fill={zenDarkTheme.textInverse} size={24} />
               )}
             </Pressable>
 
@@ -293,7 +330,7 @@ export function PlayerScreen({ navigation, route }: Props) {
                   navigation.replace("Success");
                 });
               }}
-              className="ml-12"
+              style={{ marginLeft: 48 }}
             >
               <Text style={{ fontSize: 14, fontWeight: "500", letterSpacing: 1, textTransform: "uppercase", color: zenDarkTheme.textTertiary }}>
                 {copy.common.skip}

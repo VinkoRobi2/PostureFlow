@@ -19,7 +19,7 @@ import { ScreenAtmosphere } from "../components/ScreenAtmosphere";
 import { LanguageToggle } from "../components/LanguageToggle";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
-import { zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
+import { zenAmbientGlow, zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 import { getLocalizedText } from "../utils/localize";
 
@@ -76,9 +76,9 @@ export function DashboardScreen({ navigation }: Props) {
       <ScreenAtmosphere />
       <ScrollView
         contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingTop: 14,
-          paddingBottom: 36,
+          paddingHorizontal: 22,
+          paddingTop: 18,
+          paddingBottom: 40,
           maxWidth: 460,
           alignSelf: "center",
           width: "100%",
@@ -88,22 +88,13 @@ export function DashboardScreen({ navigation }: Props) {
       >
         <View
           style={{
-            marginBottom: 20,
+            marginBottom: 18,
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
-            <View
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: 999,
-                backgroundColor: DASHBOARD_THEME.accent,
-                marginRight: 8,
-              }}
-            />
             <Text
               style={{
               color: DASHBOARD_THEME.secondaryText,
@@ -150,16 +141,65 @@ export function DashboardScreen({ navigation }: Props) {
           </View>
         </View>
 
+        <View
+          style={{
+            marginBottom: 20,
+            borderRadius: 34,
+            backgroundColor: DASHBOARD_THEME.surface,
+            borderWidth: 1,
+            borderColor: DASHBOARD_THEME.border,
+            padding: 24,
+            ...zenAmbientGlow(0.08, 24),
+            ...zenGlassEffect,
+          }}
+        >
+          <Text
+            style={{
+              color: DASHBOARD_THEME.tertiaryText,
+              fontSize: 11,
+              fontWeight: "700",
+              letterSpacing: 1.4,
+              textTransform: "uppercase",
+            }}
+          >
+            {copy.dashboard.dailySuggestion}
+          </Text>
+          <Text
+            style={{
+              marginTop: 8,
+              color: DASHBOARD_THEME.primaryText,
+              fontSize: 37,
+              fontWeight: "900",
+              lineHeight: 43,
+              letterSpacing: -1,
+            }}
+          >
+            {dashboard.header.greetingName}
+          </Text>
+          <Text
+            style={{
+              marginTop: 10,
+              color: DASHBOARD_THEME.secondaryText,
+              fontSize: 15,
+              fontWeight: "600",
+              lineHeight: 22,
+            }}
+          >
+            {getLocalizedText(dashboard.header.tagline, locale)}
+          </Text>
+        </View>
+
         <Pressable
           onPress={() => navigation.navigate("Player", { routineId: featured.id })}
           style={{
             marginBottom: 14,
-            minHeight: 248,
-            borderRadius: 32,
+            minHeight: 280,
+            borderRadius: 38,
             borderWidth: 1,
             borderColor: DASHBOARD_THEME.border,
             backgroundColor: DASHBOARD_THEME.surface,
             overflow: "hidden",
+            ...zenAmbientGlow(0.1, 26),
             ...zenGlassEffect,
           }}
         >
@@ -171,11 +211,11 @@ export function DashboardScreen({ navigation }: Props) {
           <View
             style={[
               StyleSheet.absoluteFillObject,
-              { backgroundColor: zenDarkTheme.surfaceOverlay },
+              { backgroundColor: "rgba(255,255,255,0.84)" },
             ]}
           />
 
-          <View style={{ flex: 1, padding: 20, justifyContent: "space-between" }}>
+            <View style={{ flex: 1, padding: 24, justifyContent: "space-between" }}>
             <View
               style={{
                 flexDirection: "row",
@@ -188,7 +228,7 @@ export function DashboardScreen({ navigation }: Props) {
                   style={{
                     color: DASHBOARD_THEME.accent,
                     fontSize: 10,
-                    fontWeight: "500",
+                    fontWeight: "800",
                     letterSpacing: 1.2,
                     textTransform: "uppercase",
                     marginBottom: 6,
@@ -199,9 +239,9 @@ export function DashboardScreen({ navigation }: Props) {
                 <Text
                   style={{
                     color: DASHBOARD_THEME.primaryText,
-                    fontSize: 24,
-                    fontWeight: "400",
-                    lineHeight: 28,
+                    fontSize: 29,
+                    fontWeight: "900",
+                    lineHeight: 34,
                   }}
                 >
                   {getLocalizedText(featured.title, locale)}
@@ -274,8 +314,8 @@ export function DashboardScreen({ navigation }: Props) {
                   backgroundColor: zenDarkTheme.accentSoft,
                   borderWidth: 1,
                   borderColor: zenDarkTheme.borderMuted,
-                  paddingHorizontal: 14,
-                  paddingVertical: 10,
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
                   ...zenGlassEffect,
                 }}
               >
@@ -288,7 +328,7 @@ export function DashboardScreen({ navigation }: Props) {
                   style={{
                     color: DASHBOARD_THEME.primaryText,
                     fontSize: 13,
-                    fontWeight: "500",
+                    fontWeight: "800",
                     marginLeft: 8,
                   }}
                 >
@@ -304,12 +344,13 @@ export function DashboardScreen({ navigation }: Props) {
             style={{
               flex: 1,
               minHeight: 126,
-              borderRadius: 32,
+              borderRadius: 28,
               borderWidth: 1,
               borderColor: DASHBOARD_THEME.border,
               backgroundColor: DASHBOARD_THEME.surface,
-              padding: 16,
+              padding: 18,
               marginRight: 6,
+              ...zenAmbientGlow(0.04, 16),
               ...zenGlassEffect,
             }}
           >
@@ -333,7 +374,7 @@ export function DashboardScreen({ navigation }: Props) {
               style={{
                 color: DASHBOARD_THEME.primaryText,
                 fontSize: 34,
-                fontWeight: "300",
+                fontWeight: "900",
                 letterSpacing: -1,
                 marginBottom: 8,
               }}
@@ -374,12 +415,13 @@ export function DashboardScreen({ navigation }: Props) {
             style={{
               flex: 1,
               minHeight: 126,
-              borderRadius: 32,
+              borderRadius: 28,
               borderWidth: 1,
               borderColor: DASHBOARD_THEME.border,
               backgroundColor: DASHBOARD_THEME.surface,
-              padding: 16,
+              padding: 18,
               marginLeft: 6,
+              ...zenAmbientGlow(0.04, 16),
               ...zenGlassEffect,
             }}
           >
@@ -403,7 +445,7 @@ export function DashboardScreen({ navigation }: Props) {
               style={{
                 color: DASHBOARD_THEME.primaryText,
                 fontSize: 34,
-                fontWeight: "300",
+                fontWeight: "900",
                 letterSpacing: -1,
                 marginBottom: 8,
               }}
@@ -464,12 +506,13 @@ export function DashboardScreen({ navigation }: Props) {
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
-                borderRadius: 32,
+                borderRadius: 26,
                 borderWidth: 1,
                 borderColor: DASHBOARD_THEME.border,
                 backgroundColor: DASHBOARD_THEME.surface,
-                padding: 12,
+                padding: 13,
                 marginBottom: 10,
+                ...zenAmbientGlow(0.035, 14),
                 ...zenGlassEffect,
               }}
             >

@@ -2,18 +2,16 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef } from "react";
 import { Animated, Easing, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Svg, { Circle, Line, Path, Rect } from "react-native-svg";
+import Svg, { Circle, Path, Rect } from "react-native-svg";
 import { useAppModel } from "../providers/app-provider";
 import { zenAmbientGlow } from "../theme/zen-dark";
 import { onboardingDarkTheme } from "../theme/onboarding-pro-dark";
 import type { AppScreenProps } from "../types/app";
-import { getLocalizedOnboardingText } from "./onboarding/content";
 
 type Props = AppScreenProps<"Splash">;
 
 export function SplashScreen({ navigation }: Props) {
   const { entryRoute, isHydrated, locale } = useAppModel();
-  const copy = getLocalizedOnboardingText(locale);
   const opacity = useRef(new Animated.Value(0)).current;
   const scale = useRef(new Animated.Value(0.96)).current;
   const hasNavigated = useRef(false);
@@ -50,7 +48,7 @@ export function SplashScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: onboardingDarkTheme.background }}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
 
       <Pressable
         style={{ flex: 1 }}
@@ -63,113 +61,107 @@ export function SplashScreen({ navigation }: Props) {
           navigation.replace(entryRoute);
         }}
       >
-        <View
+        <Animated.View
           style={{
             flex: 1,
             alignItems: "center",
             justifyContent: "center",
-            paddingHorizontal: 24,
-            backgroundColor: onboardingDarkTheme.background,
+            paddingHorizontal: 32,
+            opacity,
+            transform: [{ scale }],
           }}
         >
           <View
-            pointerEvents="none"
             style={{
-              position: "absolute",
-              top: -80,
-              right: -60,
-              width: 220,
-              height: 220,
-              borderRadius: 999,
-              backgroundColor: onboardingDarkTheme.accentGlow,
-              opacity: 0.8,
-            }}
-          />
-
-          <Animated.View
-            style={{
+              width: 142,
+              height: 142,
+              borderRadius: 44,
               alignItems: "center",
-              opacity,
-              transform: [{ scale }],
+              justifyContent: "center",
+              backgroundColor: onboardingDarkTheme.card,
+              borderWidth: 1,
+              borderColor: onboardingDarkTheme.border,
+              ...zenAmbientGlow(0.09, 24, onboardingDarkTheme.accent),
             }}
           >
-            <View
-              style={{
-                width: 140,
-                height: 140,
-                borderRadius: 40,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: onboardingDarkTheme.card,
-                borderWidth: 1,
-                borderColor: onboardingDarkTheme.border,
-                marginBottom: 26,
-                ...zenAmbientGlow(0.08, 20),
-              }}
-            >
-              <Svg width={96} height={110} viewBox="0 0 112 136">
-                <Circle
-                  cx="56"
-                  cy="20"
-                  r="10"
-                  stroke={onboardingDarkTheme.accent}
-                  strokeWidth="1.6"
-                  fill="none"
-                />
-                <Line
-                  x1="56"
-                  y1="32"
-                  x2="56"
-                  y2="76"
-                  stroke={onboardingDarkTheme.accent}
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                />
-                <Line
-                  x1="36"
-                  y1="42"
-                  x2="76"
-                  y2="42"
-                  stroke={onboardingDarkTheme.accent}
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                />
-                <Rect x="51" y="40" width="10" height="5" rx="2.5" fill={onboardingDarkTheme.accent} />
-                <Rect x="51" y="49" width="10" height="5" rx="2.5" fill={onboardingDarkTheme.accent} />
-                <Rect x="51" y="58" width="10" height="5" rx="2.5" fill={onboardingDarkTheme.accent} />
-                <Rect x="51" y="67" width="10" height="5" rx="2.5" fill={onboardingDarkTheme.accent} />
-                <Path
-                  d="M56 76 L82 76 L82 108"
-                  stroke={onboardingDarkTheme.accent}
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="none"
-                />
-                <Path
-                  d="M56 76 L46 108 L78 108"
-                  stroke={onboardingDarkTheme.accent}
-                  strokeWidth="1.6"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  fill="none"
-                />
-              </Svg>
-            </View>
+            <PostureFlowMark />
+          </View>
 
-            <Text
-              style={{
-                color: onboardingDarkTheme.textPrimary,
-                fontSize: 42,
-                fontWeight: "400",
-                letterSpacing: -1.2,
-              }}
-            >
-              {copy.welcome}
-            </Text>
-          </Animated.View>
-        </View>
+          <Text
+            style={{
+              marginTop: 26,
+              color: onboardingDarkTheme.textPrimary,
+              fontSize: 31,
+              fontWeight: "900",
+              letterSpacing: -0.8,
+            }}
+          >
+            PostureFlow
+          </Text>
+
+          <Text
+            style={{
+              marginTop: 8,
+              color: onboardingDarkTheme.textSecondary,
+              fontSize: 14,
+              fontWeight: "700",
+              letterSpacing: 0.2,
+              textAlign: "center",
+            }}
+          >
+            {locale === "es"
+              ? "Inhala. Exhala. Trabaja mejor."
+              : "Inhale. Exhale. Work better."}
+          </Text>
+        </Animated.View>
       </Pressable>
     </SafeAreaView>
+  );
+}
+
+function PostureFlowMark() {
+  return (
+    <Svg width={86} height={86} viewBox="0 0 86 86">
+      <Circle
+        cx="43"
+        cy="43"
+        r="35"
+        fill={onboardingDarkTheme.porcelain}
+        stroke={onboardingDarkTheme.borderStrong}
+        strokeWidth="2"
+      />
+      <Path
+        d="M43 17 C51 25 51 35 43 43 C35 51 35 61 43 69"
+        fill="none"
+        stroke={onboardingDarkTheme.textPrimary}
+        strokeLinecap="round"
+        strokeWidth="4"
+      />
+      <Circle cx="43" cy="15" r="6" fill={onboardingDarkTheme.accent} />
+      <Rect
+        x="36"
+        y="32"
+        width="14"
+        height="5"
+        rx="2.5"
+        fill={onboardingDarkTheme.accent}
+      />
+      <Rect
+        x="36"
+        y="42"
+        width="14"
+        height="5"
+        rx="2.5"
+        fill={onboardingDarkTheme.accent}
+      />
+      <Rect
+        x="36"
+        y="52"
+        width="14"
+        height="5"
+        rx="2.5"
+        fill={onboardingDarkTheme.accent}
+      />
+    </Svg>
   );
 }

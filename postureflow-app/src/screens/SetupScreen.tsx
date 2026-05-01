@@ -1,6 +1,5 @@
 import {
   BatteryLow,
-  CheckCircle2,
   Cpu,
   Eye,
 } from "lucide-react-native";
@@ -12,7 +11,7 @@ import { PrimaryButton } from "../components/PrimaryButton";
 import { ScreenAtmosphere } from "../components/ScreenAtmosphere";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
-import { zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
+import { zenAmbientGlow, zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 import { getLocalizedText } from "../utils/localize";
 
@@ -31,7 +30,7 @@ const SCREEN_THEME = {
   border: zenDarkTheme.border,
   borderStrong: zenDarkTheme.borderMuted,
   accent: zenDarkTheme.accent,
-  accentStroke: zenDarkTheme.accentStrong,
+  accentStroke: zenDarkTheme.accent,
   primaryText: zenDarkTheme.textPrimary,
   secondaryText: zenDarkTheme.textSecondary,
   tertiaryText: zenDarkTheme.textTertiary,
@@ -87,22 +86,22 @@ export function SetupScreen({ navigation }: Props) {
     <SafeAreaView style={{ flex: 1, backgroundColor: SCREEN_THEME.background }}>
       <ScreenAtmosphere />
       <ScrollView
-        className="flex-1"
+        style={{ flex: 1 }}
         contentContainerStyle={{
           flexGrow: 1,
           maxWidth: 460,
           alignSelf: "center",
           width: "100%",
-          paddingHorizontal: 24,
-          paddingTop: 24,
-          paddingBottom: 32,
+          paddingHorizontal: 26,
+          paddingTop: 34,
+          paddingBottom: 34,
         }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         <View
           style={{
-            marginBottom: 26,
+            marginBottom: 24,
             flexDirection: "row",
             alignItems: "flex-start",
             justifyContent: "space-between",
@@ -111,14 +110,14 @@ export function SetupScreen({ navigation }: Props) {
           <View style={{ flex: 1, paddingRight: 16 }}>
             <View
               style={{
-                marginBottom: 16,
+                marginBottom: 14,
                 alignSelf: "flex-start",
                 borderRadius: 999,
-                backgroundColor: SCREEN_THEME.surface,
+                backgroundColor: zenDarkTheme.surfaceMuted,
                 borderWidth: 1,
                 borderColor: SCREEN_THEME.border,
-                paddingHorizontal: 12,
-                paddingVertical: 6,
+                paddingHorizontal: 13,
+                paddingVertical: 7,
                 ...zenGlassEffect,
               }}
             >
@@ -127,7 +126,7 @@ export function SetupScreen({ navigation }: Props) {
                   color: SCREEN_THEME.accent,
                   fontSize: 11,
                   fontWeight: "500",
-                  letterSpacing: 1.2,
+                  letterSpacing: 1.35,
                   textTransform: "uppercase",
                 }}
               >
@@ -138,9 +137,10 @@ export function SetupScreen({ navigation }: Props) {
             <Text
               style={{
                 color: SCREEN_THEME.primaryText,
-                fontSize: 30,
-                fontWeight: "400",
-                lineHeight: 38,
+                fontSize: 34,
+                fontWeight: "500",
+                lineHeight: 42,
+                letterSpacing: -0.45,
               }}
             >
               {copy.setup.title}
@@ -150,8 +150,8 @@ export function SetupScreen({ navigation }: Props) {
               style={{
                 color: SCREEN_THEME.secondaryText,
                 fontSize: 15,
-                lineHeight: 22,
-                marginTop: 10,
+                lineHeight: 24,
+                marginTop: 12,
                 maxWidth: 310,
                 fontWeight: "400",
               }}
@@ -167,6 +167,72 @@ export function SetupScreen({ navigation }: Props) {
           />
         </View>
 
+        <View
+          style={{
+            marginBottom: 18,
+            borderRadius: 36,
+            backgroundColor: zenDarkTheme.surface,
+            borderWidth: 1,
+            borderColor: zenDarkTheme.border,
+            padding: 22,
+            ...zenAmbientGlow(0.09, 24),
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View
+              style={{
+                width: 68,
+                height: 68,
+                borderRadius: 26,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: zenDarkTheme.accentSoft,
+                borderWidth: 1,
+                borderColor: zenDarkTheme.borderMuted,
+                marginRight: 16,
+              }}
+            >
+              <Text
+                style={{
+                  color: zenDarkTheme.accentStrong,
+                  fontSize: 22,
+                  fontWeight: "900",
+                  letterSpacing: -0.5,
+                }}
+              >
+                02
+              </Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  color: zenDarkTheme.textTertiary,
+                  fontSize: 11,
+                  fontWeight: "800",
+                  letterSpacing: 1.3,
+                  textTransform: "uppercase",
+                }}
+              >
+                {locale === "es" ? "Calibracion" : "Calibration"}
+              </Text>
+              <Text
+                style={{
+                  marginTop: 6,
+                  color: zenDarkTheme.textPrimary,
+                  fontSize: 22,
+                  fontWeight: "800",
+                  lineHeight: 28,
+                  letterSpacing: -0.45,
+                }}
+              >
+                {locale === "es"
+                  ? "Elige el estado que mejor describe tu energia de trabajo."
+                  : "Choose the state that best describes your work energy."}
+              </Text>
+            </View>
+          </View>
+        </View>
+
         <View style={{ flex: 1 }}>
           {bootstrap.onboarding.setupOptions.map((option, index) => {
             const isSelected = activeSelection.includes(option.id);
@@ -178,20 +244,14 @@ export function SetupScreen({ navigation }: Props) {
                 onPress={() => selectOption(option.id)}
                 style={({ pressed }) => ({
                   marginBottom:
-                    index === bootstrap.onboarding.setupOptions.length - 1 ? 0 : 14,
+                    index === bootstrap.onboarding.setupOptions.length - 1 ? 0 : 16,
                   borderRadius: 32,
-                  borderWidth: 1,
-                  borderColor: isSelected
-                    ? SCREEN_THEME.accentStroke
-                    : SCREEN_THEME.border,
+                  borderWidth: isSelected ? 1 : 0,
+                  borderColor: isSelected ? SCREEN_THEME.borderStrong : SCREEN_THEME.border,
                   backgroundColor: isSelected
-                    ? "rgba(94,234,212,0.10)"
+                    ? zenDarkTheme.porcelain
                     : SCREEN_THEME.surface,
-                  shadowColor: SCREEN_THEME.accent,
-                  shadowOpacity: isSelected ? 0.12 : 0.04,
-                  shadowRadius: isSelected ? 26 : 20,
-                  shadowOffset: { width: 0, height: 14 },
-                  elevation: isSelected ? 5 : 2,
+                  ...zenAmbientGlow(isSelected ? 0.12 : 0.04, isSelected ? 22 : 16),
                   opacity: pressed ? 0.94 : 1,
                   overflow: "hidden",
                 })}
@@ -199,27 +259,36 @@ export function SetupScreen({ navigation }: Props) {
                 <View
                   style={{
                     borderRadius: 32,
-                    paddingHorizontal: 20,
-                    paddingVertical: 20,
+                    paddingHorizontal: 18,
+                    paddingVertical: 18,
                     ...zenGlassEffect,
                   }}
                 >
                   <View style={{ flexDirection: "row", alignItems: "center" }}>
+                    <Text
+                      style={{
+                        width: 38,
+                        color: isSelected
+                          ? zenDarkTheme.accentStrong
+                          : zenDarkTheme.textTertiary,
+                        fontSize: 20,
+                        fontWeight: "900",
+                        letterSpacing: -0.4,
+                      }}
+                    >
+                      0{index + 1}
+                    </Text>
                     <View
                       style={{
                         width: 62,
                         height: 62,
-                        borderRadius: 24,
+                        borderRadius: 23,
                         backgroundColor: isSelected
-                          ? zenDarkTheme.accentSoft
+                          ? "rgba(255,190,168,0.18)"
                           : zenDarkTheme.cardMuted,
-                        borderWidth: 1,
-                        borderColor: isSelected
-                          ? "rgba(94,234,212,0.24)"
-                          : SCREEN_THEME.border,
                         alignItems: "center",
                         justifyContent: "center",
-                        marginRight: 16,
+                        marginRight: 14,
                       }}
                     >
                       <Icon
@@ -233,9 +302,9 @@ export function SetupScreen({ navigation }: Props) {
                       <Text
                         style={{
                           color: SCREEN_THEME.primaryText,
-                          fontSize: 18,
-                          fontWeight: "500",
-                          lineHeight: 24,
+                          fontSize: 17,
+                          fontWeight: "800",
+                          lineHeight: 22,
                           marginBottom: 5,
                         }}
                       >
@@ -246,36 +315,11 @@ export function SetupScreen({ navigation }: Props) {
                           color: SCREEN_THEME.secondaryText,
                           fontSize: 13,
                           lineHeight: 19,
-                          fontWeight: "400",
+                          fontWeight: "500",
                         }}
                       >
                         {getLocalizedText(option.description, locale)}
                       </Text>
-                    </View>
-
-                    <View
-                      style={{
-                        width: 30,
-                        height: 30,
-                        borderRadius: 999,
-                        borderWidth: 1,
-                        borderColor: isSelected
-                          ? SCREEN_THEME.accentStroke
-                          : SCREEN_THEME.borderStrong,
-                        backgroundColor: isSelected
-                          ? zenDarkTheme.accentSoft
-                          : "transparent",
-                        alignItems: "center",
-                        justifyContent: "center",
-                      }}
-                    >
-                      {isSelected ? (
-                        <CheckCircle2
-                          color={SCREEN_THEME.accent}
-                          size={18}
-                          strokeWidth={1.8}
-                        />
-                      ) : null}
                     </View>
                   </View>
                 </View>
@@ -284,7 +328,7 @@ export function SetupScreen({ navigation }: Props) {
           })}
         </View>
 
-        <View style={{ paddingTop: 22 }}>
+        <View style={{ paddingTop: 24 }}>
           <PrimaryButton
             label={copy.common.generateProgram}
             onPress={() => {
@@ -293,7 +337,7 @@ export function SetupScreen({ navigation }: Props) {
               }
               navigation.navigate("Analyzing");
             }}
-            variant="teal"
+            variant="primary"
             disabled={activeSelection.length === 0}
           />
         </View>

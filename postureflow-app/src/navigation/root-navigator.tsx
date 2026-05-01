@@ -41,6 +41,7 @@ function createRoute<Name extends keyof RootStackParamList>(
 
 export function RootNavigator() {
   const [stack, setStack] = useState<RouteEntry[]>([createRoute("Splash")]);
+  const currentRoute = stack[stack.length - 1];
 
   const navigate = useCallback<AppNavigation["navigate"]>((name, params) => {
     setStack((current) => [...current, createRoute(name, params)]);
@@ -66,10 +67,8 @@ export function RootNavigator() {
     [goBack, navigate, replace],
   );
 
-  const currentRoute = stack[stack.length - 1];
-
   return (
-    <View style={{ flex: 1, backgroundColor: zenDarkTheme.canvas }}>
+    <View style={{ flex: 1, backgroundColor: zenDarkTheme.canvas, overflow: "hidden" }}>
       {renderCurrentRoute(currentRoute, navigation)}
     </View>
   );

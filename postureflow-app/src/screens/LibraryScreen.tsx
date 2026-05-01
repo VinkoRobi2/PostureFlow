@@ -1,5 +1,4 @@
 import {
-  CheckCircle2,
   ChevronLeft,
   CloudOff,
   Download,
@@ -20,7 +19,7 @@ import { BentoCard } from "../components/BentoCard";
 import { ScreenAtmosphere } from "../components/ScreenAtmosphere";
 import { messages } from "../i18n/messages";
 import { useAppModel } from "../providers/app-provider";
-import { zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
+import { zenAmbientGlow, zenDarkTheme, zenGlassEffect } from "../theme/zen-dark";
 import type { AppScreenProps } from "../types/app";
 import { getLocalizedText } from "../utils/localize";
 
@@ -56,8 +55,8 @@ export function LibraryScreen({ navigation }: Props) {
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 24,
-          paddingTop: 18,
-          paddingBottom: 32,
+          paddingTop: 24,
+          paddingBottom: 40,
           maxWidth: 460,
           alignSelf: "center",
           width: "100%",
@@ -65,7 +64,7 @@ export function LibraryScreen({ navigation }: Props) {
       >
         <View
           style={{
-            marginBottom: 32,
+            marginBottom: 22,
             flexDirection: "row",
             alignItems: "center",
           }}
@@ -88,17 +87,30 @@ export function LibraryScreen({ navigation }: Props) {
             <ChevronLeft color={zenDarkTheme.textSecondary} size={20} />
           </Pressable>
 
-          <Text
-            style={{
-              flex: 1,
-              fontSize: 30,
-              fontWeight: "400",
-              letterSpacing: -0.6,
-              color: zenDarkTheme.textPrimary,
-            }}
-          >
-            {copy.library.title}
-          </Text>
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{
+                fontSize: 12,
+                fontWeight: "700",
+                letterSpacing: 1.4,
+                textTransform: "uppercase",
+                color: zenDarkTheme.textTertiary,
+              }}
+            >
+              {locale === "es" ? "Biblioteca offline" : "Offline library"}
+            </Text>
+            <Text
+              style={{
+                marginTop: 4,
+                fontSize: 34,
+                fontWeight: "700",
+                letterSpacing: -0.8,
+                color: zenDarkTheme.textPrimary,
+              }}
+            >
+              {copy.library.title}
+            </Text>
+          </View>
 
           <View
             style={{
@@ -117,17 +129,24 @@ export function LibraryScreen({ navigation }: Props) {
           </View>
         </View>
 
-        <BentoCard className="mb-8 p-4">
+        <BentoCard
+          style={{
+            marginBottom: 20,
+            padding: 22,
+            backgroundColor: zenDarkTheme.porcelain,
+            borderColor: zenDarkTheme.borderMuted,
+          }}
+        >
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View
               style={{
                 marginRight: 16,
-                height: 40,
-                width: 40,
+                height: 48,
+                width: 48,
                 alignItems: "center",
                 justifyContent: "center",
-                borderRadius: 16,
-                backgroundColor: zenDarkTheme.input,
+                borderRadius: 20,
+                backgroundColor: zenDarkTheme.accentSoft,
               }}
             >
               <HardDrive color={zenDarkTheme.textSecondary} size={20} />
@@ -145,7 +164,7 @@ export function LibraryScreen({ navigation }: Props) {
                 <Text
                   style={{
                     fontSize: 10,
-                    fontWeight: "500",
+                    fontWeight: "800",
                     letterSpacing: 1,
                     textTransform: "uppercase",
                     color: zenDarkTheme.textTertiary,
@@ -187,19 +206,28 @@ export function LibraryScreen({ navigation }: Props) {
           </View>
         </BentoCard>
 
-        <View style={{ gap: 16 }}>
+        <View style={{ gap: 14 }}>
           {library.routines.map((routine) => {
             const isDownloading = downloadingId === routine.id;
 
             return (
-              <BentoCard key={routine.id} className="h-28 p-4">
+              <BentoCard
+                key={routine.id}
+                style={{
+                  minHeight: 142,
+                  padding: 16,
+                  ...zenAmbientGlow(0.05, 18),
+                }}
+              >
                 <View style={{ flexDirection: "row", alignItems: "center" }}>
                   <View
                     style={{
-                      height: 80,
-                      width: 80,
+                      height: 104,
+                      width: 104,
                       overflow: "hidden",
-                      borderRadius: 24,
+                      borderRadius: 30,
+                      borderWidth: 1,
+                      borderColor: zenDarkTheme.border,
                     }}
                   >
                     <Image
@@ -209,13 +237,13 @@ export function LibraryScreen({ navigation }: Props) {
                     />
                   </View>
 
-                  <View style={{ marginLeft: 16, flex: 1 }}>
+                  <View style={{ marginLeft: 16, flex: 1, alignSelf: "stretch", justifyContent: "center" }}>
                     <Text
                       style={{
                         color: zenDarkTheme.textPrimary,
-                        fontSize: 16,
-                        fontWeight: "500",
-                        lineHeight: 20,
+                        fontSize: 17,
+                        fontWeight: "800",
+                        lineHeight: 22,
                       }}
                     >
                       {getLocalizedText(routine.title, locale)}
@@ -225,7 +253,7 @@ export function LibraryScreen({ navigation }: Props) {
                         marginTop: 4,
                         color: zenDarkTheme.textSecondary,
                         fontSize: 12,
-                        fontWeight: "400",
+                        fontWeight: "600",
                       }}
                     >
                       {`${getLocalizedText(routine.durationLabel, locale)} | ${routine.sizeLabel}`}
@@ -235,17 +263,27 @@ export function LibraryScreen({ navigation }: Props) {
                   {routine.downloaded ? (
                     <View
                       style={{
-                        height: 40,
-                        width: 40,
+                        minHeight: 36,
                         alignItems: "center",
                         justifyContent: "center",
-                        borderRadius: 999,
+                        borderRadius: 20,
                         borderWidth: 1,
-                        borderColor: zenDarkTheme.border,
+                        borderColor: zenDarkTheme.borderMuted,
                         backgroundColor: zenDarkTheme.accentSoft,
+                        paddingHorizontal: 12,
                       }}
                     >
-                      <CheckCircle2 color={zenDarkTheme.accent} size={20} />
+                      <Text
+                        style={{
+                          color: zenDarkTheme.accentStrong,
+                          fontSize: 11,
+                          fontWeight: "800",
+                          letterSpacing: 0.8,
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        {locale === "es" ? "Guardado" : "Saved"}
+                      </Text>
                     </View>
                   ) : (
                     <Pressable

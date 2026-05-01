@@ -2,25 +2,28 @@ import { StatusBar } from "expo-status-bar";
 import {
   type PropsWithChildren,
   type ReactNode,
-  useEffect,
-  useRef,
 } from "react";
 import {
-  Animated,
-  Easing,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   type StyleProp,
   type ViewStyle,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LanguageToggle } from "../LanguageToggle";
+import { ScreenAtmosphere } from "../ScreenAtmosphere";
+import { useAppModel } from "../../providers/app-provider";
 import { onboardingDarkTheme } from "../../theme/onboarding-pro-dark";
+import { rs, screenPadH, screenPadT } from "../../utils/responsive";
 
 type OnboardingFrameProps = PropsWithChildren<{
   footer?: ReactNode;
   contentStyle?: StyleProp<ViewStyle>;
   keyboard?: boolean;
+  onPress?: () => void;
+  showLanguageToggle?: boolean;
 }>;
 
 export function OnboardingFrame({
@@ -28,76 +31,51 @@ export function OnboardingFrame({
   footer,
   contentStyle,
   keyboard = false,
+  onPress,
+  showLanguageToggle = true,
 }: OnboardingFrameProps) {
-  const opacity = useRef(new Animated.Value(0)).current;
-  const translate = useRef(new Animated.Value(14)).current;
-
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(opacity, {
-        toValue: 1,
-        duration: 420,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }),
-      Animated.timing(translate, {
-        toValue: 0,
-        duration: 420,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [opacity, translate]);
-
+  const { locale, toggleLocale } = useAppModel();
   const body = (
-    <Animated.View
+    <View
       style={[
         {
           flex: 1,
-          paddingHorizontal: 24,
-          paddingTop: 18,
-          paddingBottom: 24,
-          opacity,
-          transform: [{ translateY: translate }],
+          width: "100%",
+          maxWidth: rs(460),
+          alignSelf: "center",
+          paddingHorizontal: screenPadH,
+          paddingTop: screenPadT,
+          paddingBottom: rs(28),
         },
         contentStyle,
       ]}
     >
       {children}
-    </Animated.View>
+    </View>
   );
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: onboardingDarkTheme.background }}>
-      <StatusBar style="light" />
+      <StatusBar style="dark" />
 
       <View style={{ flex: 1, backgroundColor: onboardingDarkTheme.background }}>
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            top: -92,
-            right: -108,
-            width: 184,
-            height: 184,
-            borderRadius: 999,
-            backgroundColor: onboardingDarkTheme.accentGlow,
-            opacity: 0.52,
-          }}
-        />
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            bottom: -128,
-            left: -126,
-            width: 236,
-            height: 236,
-            borderRadius: 999,
-            backgroundColor: "rgba(255,255,255,0.02)",
-          }}
-        />
-
+        <ScreenAtmosphere />
+        {showLanguageToggle ? (
+          <View
+            style={{
+              position: "absolute",
+              top: rs(16),
+              right: rs(20),
+              zIndex: 10,
+            }}
+          >
+            <LanguageToggle
+              locale={locale}
+              onToggle={() => void toggleLocale()}
+              variant="dark"
+            />
+          </View>
+        ) : null}
         {keyboard ? (
           <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -106,6 +84,11 @@ export function OnboardingFrame({
             {body}
             {footer}
           </KeyboardAvoidingView>
+        ) : onPress ? (
+          <Pressable style={{ flex: 1 }} onPress={onPress}>
+            {body}
+            {footer}
+          </Pressable>
         ) : (
           <>
             {body}

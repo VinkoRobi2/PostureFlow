@@ -2,17 +2,12 @@ import Body, {
   type ExtendedBodyPart,
   type Slug,
 } from "react-native-body-highlighter";
-import { Activity, ChevronRight } from "lucide-react-native";
 import { useMemo, useState } from "react";
 import { type DimensionValue, Pressable, Text, View } from "react-native";
 import { messages } from "../i18n/messages";
-import {
-  zenAmbientGlow,
-  zenDarkTheme,
-  zenGlassEffect,
-} from "../theme/zen-dark";
+import { onboardingDarkTheme } from "../theme/onboarding-pro-dark";
 import type { LocaleCode, PainRegion } from "../types/app";
-import { getLocalizedText } from "../utils/localize";
+import { ff, hairline, rs } from "../utils/responsive";
 
 type ScannerRegionId = string;
 type ScannerView = "front" | "back";
@@ -34,19 +29,21 @@ type BiomechanicalScannerProps = {
 };
 
 const SCANNER_THEME = {
-  background: zenDarkTheme.canvas,
-  surface: zenDarkTheme.surfaceGlass,
-  surfaceAlt: zenDarkTheme.cardMuted,
-  panel: zenDarkTheme.surfaceGlass,
-  border: zenDarkTheme.border,
-  borderStrong: zenDarkTheme.borderMuted,
-  accent: zenDarkTheme.accent,
-  accentStroke: zenDarkTheme.accentStrong,
-  primaryText: zenDarkTheme.textPrimary,
-  secondaryText: zenDarkTheme.textSecondary,
-  tertiaryText: zenDarkTheme.textTertiary,
-  figureIdle: "#475569",
-  figureStroke: "#64748B",
+  background: onboardingDarkTheme.background,
+  surface: onboardingDarkTheme.porcelain,
+  surfaceAlt: onboardingDarkTheme.backgroundRaised,
+  panel: onboardingDarkTheme.card,
+  border: onboardingDarkTheme.border,
+  borderStrong: onboardingDarkTheme.borderStrong,
+  accent: onboardingDarkTheme.accent,
+  accentStroke: onboardingDarkTheme.accentStrong,
+  primaryText: onboardingDarkTheme.textPrimary,
+  secondaryText: onboardingDarkTheme.textSecondary,
+  tertiaryText: onboardingDarkTheme.textTertiary,
+  figureIdle: "#3A3337",
+  figureStroke: "#76686F",
+  selectedFill: onboardingDarkTheme.accent,
+  selectedStroke: onboardingDarkTheme.accentStrong,
 } as const;
 
 const REGION_ORDER: ScannerRegionId[] = [
@@ -68,14 +65,14 @@ const REGION_ORDER: ScannerRegionId[] = [
 
 const BODY_LAYOUTS = {
   compact: {
-    width: 144,
-    height: 292,
+    width: rs(134),
+    height: rs(340),
     scale: 0.74,
   },
   focus: {
-    width: 182,
-    height: 346,
-    scale: 0.88,
+    width: rs(170),
+    height: rs(400),
+    scale: 0.94,
   },
 } as const;
 
@@ -227,10 +224,93 @@ const SLUG_TO_REGION: Record<ScannerView, Partial<Record<Slug, ScannerRegionId>>
 
 function activeStyles() {
   return {
-    fill: SCANNER_THEME.accent,
-    stroke: SCANNER_THEME.accentStroke,
-    strokeWidth: 1.1,
+    fill: SCANNER_THEME.selectedFill,
+    stroke: SCANNER_THEME.selectedStroke,
+    strokeWidth: 0.9,
   };
+}
+
+function percentToPx(value: DimensionValue, total: number) {
+  if (typeof value === "string" && value.endsWith("%")) {
+    return (Number.parseFloat(value) / 100) * total;
+  }
+
+  if (typeof value === "number") {
+    return value;
+  }
+
+  return 0;
+}
+
+function BodySelectionDots({
+  side,
+  selectedParts,
+  width,
+  height,
+}: {
+  side: ScannerView;
+  selectedParts: ScannerRegionId[];
+  width: number;
+  height: number;
+}) {
+  const activeHotspots = HOTSPOTS[side].filter((hotspot) =>
+    selectedParts.includes(hotspot.id),
+  );
+
+  if (activeHotspots.length === 0) {
+    return null;
+  }
+
+  return (
+    <View
+      pointerEvents="none"
+      style={{ position: "absolute", top: 0, left: 0, width, height }}
+    >
+      {activeHotspots.map((hotspot, index) => {
+        const left = percentToPx(hotspot.left, width);
+        const top = percentToPx(hotspot.top, height);
+        const hotspotWidth = percentToPx(hotspot.width, width);
+        const hotspotHeight = percentToPx(hotspot.height, height);
+        const centerX = left + hotspotWidth / 2;
+        const centerY = top + hotspotHeight / 2;
+
+        return (
+          <View
+            key={`tension-dot-${side}-${hotspot.id}-${index}`}
+            style={{
+              position: "absolute",
+              top: centerY - rs(9),
+              left: centerX - rs(9),
+              width: rs(18),
+              height: rs(18),
+              borderRadius: rs(9),
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <View
+              style={{
+                position: "absolute",
+                width: rs(18),
+                height: rs(18),
+                borderRadius: rs(9),
+                backgroundColor: onboardingDarkTheme.accentStrong,
+                opacity: 0.2,
+              }}
+            />
+            <View
+              style={{
+                width: rs(9),
+                height: rs(9),
+                borderRadius: rs(5),
+                backgroundColor: onboardingDarkTheme.accentStrong,
+              }}
+            />
+          </View>
+        );
+      })}
+    </View>
+  );
 }
 
 function BodyHotspots({
@@ -258,14 +338,13 @@ function BodyHotspots({
               left: hotspot.left,
               width: hotspot.width,
               height: hotspot.height,
-              borderRadius: 999,
+              borderRadius: rs(999),
               backgroundColor: isSelected
-                ? zenDarkTheme.accentSoft
+                ? onboardingDarkTheme.accentSoft
                 : pressed
-                  ? "rgba(255,255,255,0.04)"
+                  ? onboardingDarkTheme.accentSoft
                   : "transparent",
-              borderWidth: isSelected ? 1 : 0,
-              borderColor: isSelected ? SCANNER_THEME.accent : "transparent",
+              borderWidth: 0,
             })}
           />
         );
@@ -282,7 +361,6 @@ function BodyFigure({
   onPress,
   onToggle,
   layout,
-  showLabel,
 }: {
   data: ExtendedBodyPart[];
   label: string;
@@ -291,56 +369,38 @@ function BodyFigure({
   onPress: (slug?: Slug) => void;
   onToggle: (part: ScannerRegionId) => void;
   layout: keyof typeof BODY_LAYOUTS;
-  showLabel: boolean;
 }) {
   const size = BODY_LAYOUTS[layout];
 
   return (
-    <View style={{ alignItems: "center", width: size.width + 28 }}>
-      {showLabel ? (
-        <Text
-          style={{
-            color: SCANNER_THEME.tertiaryText,
-            fontSize: 10,
-            fontWeight: "500",
-            letterSpacing: 1.6,
-            marginBottom: 10,
-            textTransform: "uppercase",
-          }}
-        >
-          {label}
-        </Text>
-      ) : null}
+    <View style={{ alignItems: "center", flex: 1, minHeight: 0 }}>
+      <Text
+        style={{
+          color: onboardingDarkTheme.textTertiary,
+          fontFamily: ff,
+          fontSize: rs(9),
+          fontWeight: "800",
+          letterSpacing: 1.5,
+          marginBottom: rs(10),
+          textTransform: "uppercase",
+        }}
+      >
+        {label}
+      </Text>
 
       <View
         style={{
-          width: size.width + 18,
-          height: size.height + 14,
-          borderRadius: 30,
-          borderWidth: 1,
-          borderColor: "rgba(255,255,255,0.05)",
-          backgroundColor: "rgba(15,23,42,0.34)",
+          flex: 1,
+          minHeight: 0,
+          width: "100%",
+          borderRadius: rs(16),
+          backgroundColor: onboardingDarkTheme.backgroundRaised,
           alignItems: "center",
           justifyContent: "center",
           overflow: "hidden",
           position: "relative",
         }}
       >
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            top: 18,
-            width: size.width * 0.58,
-            height: size.width * 0.58,
-            borderRadius: 999,
-            backgroundColor: selectedParts.length > 0
-              ? zenDarkTheme.accentGlow
-              : "rgba(148,163,184,0.10)",
-            opacity: selectedParts.length > 0 ? 0.14 : 0.1,
-          }}
-        />
-
         <View
           style={{
             width: size.width,
@@ -351,16 +411,23 @@ function BodyFigure({
           }}
         >
           <Body
-          border="none"
-          data={data}
-          defaultFill={SCANNER_THEME.figureIdle}
-          defaultStroke={SCANNER_THEME.figureStroke}
-          defaultStrokeWidth={1}
-          gender="male"
-          scale={size.scale}
-          side={side}
-          onBodyPartPress={(part) => onPress(part.slug)}
-        />
+            border="none"
+            data={data}
+            defaultFill={SCANNER_THEME.figureIdle}
+            defaultStroke={SCANNER_THEME.figureStroke}
+            defaultStrokeWidth={0.9}
+            gender="male"
+            scale={size.scale}
+            side={side}
+            onBodyPartPress={(part) => onPress(part.slug)}
+          />
+
+          <BodySelectionDots
+            side={side}
+            selectedParts={selectedParts}
+            width={size.width}
+            height={size.height}
+          />
 
           <BodyHotspots
             selectedParts={selectedParts}
@@ -384,29 +451,6 @@ export function BiomechanicalScanner({
   const [figureMode, setFigureMode] = useState<FigureMode>("both");
   const copy = messages[locale];
 
-  const regionOptions = useMemo(
-    () =>
-      REGION_ORDER.map((id) => {
-        const region = painRegions.find((item) => item.id === id);
-
-        return {
-          id,
-          label: region ? getLocalizedText(region.label, locale) : id,
-        };
-      }),
-    [locale, painRegions],
-  );
-
-  const selectedLabels = useMemo(
-    () => regionOptions.filter((region) => selectedParts.includes(region.id)),
-    [regionOptions, selectedParts],
-  );
-
-  const selectedSummary = useMemo(
-    () => selectedLabels.map((item) => item.label).join(" | "),
-    [selectedLabels],
-  );
-
   const frontData = useMemo(
     () => selectedParts.flatMap((part) => REGION_TO_BODY_PARTS[part]?.front ?? []),
     [selectedParts],
@@ -417,10 +461,12 @@ export function BiomechanicalScanner({
     [selectedParts],
   );
 
-  const continueLabel =
-    selectedParts.length > 0
-      ? copy.painMap.continueWithSelection
-      : copy.painMap.continueButton;
+  const selectedZoneLabels = REGION_ORDER.filter((regionId) =>
+    selectedParts.includes(regionId),
+  ).map((regionId) => {
+    const match = painRegions.find((region) => region.id === regionId);
+    return match?.label[locale] ?? regionId.replace(/_/g, " ");
+  });
 
   const togglePart = (part: ScannerRegionId) => {
     setSelectedParts((current) =>
@@ -444,341 +490,214 @@ export function BiomechanicalScanner({
   };
 
   return (
-    <View className="flex-1">
-      <View className="mb-4">
-        <View
-          style={{
-            marginBottom: 12,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <View className="flex-row items-center">
-            <View
-              style={{
-                width: 7,
-                height: 7,
-                borderRadius: 999,
-                backgroundColor: SCANNER_THEME.accent,
-                marginRight: 8,
-              }}
-            />
-            <Text
-              style={{
-                color: SCANNER_THEME.accent,
-                fontSize: 10,
-                fontWeight: "500",
-                letterSpacing: 1.8,
-                textTransform: "uppercase",
-              }}
-            >
-              {copy.painMap.scanner}
-            </Text>
-          </View>
-
-          <View
-            style={{
-              minWidth: 62,
-              borderRadius: 999,
-              borderWidth: 1,
-              borderColor: SCANNER_THEME.border,
-              backgroundColor: SCANNER_THEME.surface,
-              paddingHorizontal: 10,
-              paddingVertical: 6,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              ...zenGlassEffect,
-            }}
-          >
-            <Activity color={SCANNER_THEME.accent} size={12} />
-            <Text
-              style={{
-                color: SCANNER_THEME.primaryText,
-                fontSize: 12,
-                fontWeight: "500",
-                marginLeft: 6,
-              }}
-            >
-              {selectedParts.length}
-            </Text>
-          </View>
-        </View>
-
-        <Text
-          style={{
-            color: SCANNER_THEME.primaryText,
-            fontSize: 30,
-            fontWeight: "400",
-            lineHeight: 38,
-            maxWidth: 320,
-          }}
-        >
-          {copy.painMap.titleLead}{" "}
-          <Text style={{ color: SCANNER_THEME.accent }}>
-            {copy.painMap.titleAccent}
-          </Text>
-        </Text>
-
-        <Text
-          style={{
-            marginTop: 10,
-            maxWidth: 320,
-            color: SCANNER_THEME.secondaryText,
-            fontSize: 15,
-            lineHeight: 22,
-            fontWeight: "400",
-          }}
-        >
-          {copy.painMap.subtitle}
-        </Text>
-      </View>
-
+    <View style={{ width: "100%", flex: 1, height: "100%", minHeight: 0 }}>
       <View
         style={{
-          flex: 1,
-          minHeight: 0,
-          borderRadius: 32,
-          borderWidth: 1,
-          borderColor: SCANNER_THEME.borderStrong,
-          backgroundColor: SCANNER_THEME.panel,
-          paddingHorizontal: 16,
-          paddingTop: 14,
-          paddingBottom: 10,
-          overflow: "hidden",
-          ...zenGlassEffect,
+          backgroundColor: onboardingDarkTheme.backgroundRaised,
+          borderRadius: rs(999),
+          padding: rs(4),
+          flexDirection: "row",
+          marginBottom: rs(14),
         }}
       >
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            top: -42,
-            right: -56,
-            width: 150,
-            height: 150,
-            borderRadius: 999,
-            backgroundColor: zenDarkTheme.accentGlow,
-            opacity: 0.18,
-          }}
-        />
-        <View
-          pointerEvents="none"
-          style={{
-            position: "absolute",
-            bottom: -70,
-            left: -38,
-            width: 160,
-            height: 160,
-            borderRadius: 999,
-            backgroundColor: "rgba(148,163,184,0.08)",
-          }}
-        />
+        {([
+          { id: "both", label: copy.painMap.both },
+          { id: "front", label: copy.painMap.front },
+          { id: "back", label: copy.painMap.back },
+        ] as const).map((option) => {
+          const active = figureMode === option.id;
 
-        <View
-          style={{
-            marginBottom: 18,
-            flexDirection: "row",
-            borderRadius: 28,
-            borderWidth: 1,
-            borderColor: SCANNER_THEME.border,
-            backgroundColor: SCANNER_THEME.surfaceAlt,
-            padding: 4,
-            ...zenGlassEffect,
-          }}
-        >
-          {([
-            { id: "both", label: copy.painMap.both },
-            { id: "front", label: copy.painMap.front },
-            { id: "back", label: copy.painMap.back },
-          ] as const).map((option) => {
-            const active = figureMode === option.id;
-
-            return (
-              <Pressable
-                key={option.id}
-                onPress={() => setFigureMode(option.id)}
+          return (
+            <Pressable
+              key={option.id}
+              onPress={() => setFigureMode(option.id)}
+              style={({ pressed }) => ({
+                flex: 1,
+                borderRadius: rs(999),
+                backgroundColor: active
+                  ? onboardingDarkTheme.textPrimary
+                  : "transparent",
+                opacity: pressed ? 0.85 : 1,
+                paddingVertical: rs(9),
+              })}
+            >
+              <Text
                 style={{
-                  flex: 1,
-                  borderRadius: 24,
-                  borderWidth: 1,
-                  borderColor: active
-                    ? "rgba(94,234,212,0.45)"
-                    : "transparent",
-                  backgroundColor: active
-                    ? zenDarkTheme.accentSoft
-                    : "transparent",
-                  paddingVertical: 10,
+                  color: active
+                    ? onboardingDarkTheme.background
+                    : onboardingDarkTheme.textTertiary,
+                  fontFamily: ff,
+                  fontSize: rs(11),
+                  fontWeight: active ? "800" : "700",
+                  letterSpacing: 0.5,
+                  textAlign: "center",
+                  textTransform: "uppercase",
                 }}
               >
-                <Text
-                  style={{
-                    color: active
-                      ? SCANNER_THEME.accent
-                      : SCANNER_THEME.tertiaryText,
-                    fontSize: 11,
-                    fontWeight: "500",
-                    letterSpacing: 1.1,
-                    textAlign: "center",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {option.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <View
-          style={{
-            flex: 1,
-            minHeight: 0,
-            alignItems: "center",
-            justifyContent: "center",
-            flexDirection: figureMode === "both" ? "row" : "column",
-            paddingBottom: 4,
-          }}
-        >
-          {(figureMode === "both" || figureMode === "front") && (
-            <BodyFigure
-              data={frontData}
-              label={copy.painMap.front}
-              layout={figureMode === "both" ? "compact" : "focus"}
-              showLabel={figureMode !== "both"}
-              side="front"
-              selectedParts={selectedParts}
-              onPress={(slug) => handleBodyPartPress("front", slug)}
-              onToggle={togglePart}
-            />
-          )}
-
-          {figureMode === "both" ? (
-            <View
-              style={{
-                width: 1,
-                height: "72%",
-                alignSelf: "center",
-                marginHorizontal: 6,
-                backgroundColor: SCANNER_THEME.border,
-              }}
-            />
-          ) : null}
-
-          {(figureMode === "both" || figureMode === "back") && (
-            <BodyFigure
-              data={backData}
-              label={copy.painMap.back}
-              layout={figureMode === "both" ? "compact" : "focus"}
-              showLabel={figureMode !== "both"}
-              side="back"
-              selectedParts={selectedParts}
-              onPress={(slug) => handleBodyPartPress("back", slug)}
-              onToggle={togglePart}
-            />
-          )}
-        </View>
+                {option.label}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
 
       <View
         style={{
-          marginTop: 14,
-          paddingTop: 6,
-          paddingBottom: 4,
+          backgroundColor: onboardingDarkTheme.porcelain,
+          borderWidth: hairline,
+          borderColor: onboardingDarkTheme.border,
+          borderRadius: rs(28),
+          flex: 1,
+          minHeight: 0,
+          flexDirection: "row",
+          gap: rs(12),
+          alignItems: "stretch",
+          paddingHorizontal: rs(20),
+          paddingVertical: rs(24),
+          marginBottom: rs(8),
+          justifyContent: "center",
         }}
       >
+        {(figureMode === "both" || figureMode === "front") && (
+          <BodyFigure
+            data={frontData}
+            label={copy.painMap.front}
+            layout={figureMode === "both" ? "compact" : "focus"}
+            side="front"
+            selectedParts={selectedParts}
+            onPress={(slug) => handleBodyPartPress("front", slug)}
+            onToggle={togglePart}
+          />
+        )}
+
+        {(figureMode === "both" || figureMode === "back") && (
+          <BodyFigure
+            data={backData}
+            label={copy.painMap.back}
+            layout={figureMode === "both" ? "compact" : "focus"}
+            side="back"
+            selectedParts={selectedParts}
+            onPress={(slug) => handleBodyPartPress("back", slug)}
+            onToggle={togglePart}
+          />
+        )}
+      </View>
+
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: rs(8),
+          marginBottom: rs(8),
+          paddingHorizontal: rs(4),
+          paddingVertical: rs(12),
+        }}
+      >
+        {selectedParts.length > 0 ? (
+          <>
+            <View
+              style={{
+                alignItems: "center",
+                flex: 1,
+                flexDirection: "row",
+                gap: rs(8),
+              }}
+            >
+            <View
+              style={{
+                width: rs(7),
+                height: rs(7),
+                borderRadius: rs(4),
+                backgroundColor: onboardingDarkTheme.accentStrong,
+              }}
+            />
+            <Text
+              numberOfLines={1}
+              style={{
+                color: onboardingDarkTheme.textPrimary,
+                flex: 1,
+                fontFamily: ff,
+                fontSize: rs(13),
+                fontWeight: "700",
+              }}
+            >
+              {selectedZoneLabels.join(" · ")}
+            </Text>
+            </View>
+            <Text
+              style={{
+                color: onboardingDarkTheme.border,
+                fontFamily: ff,
+                fontSize: rs(13),
+                fontWeight: "400",
+                marginLeft: "auto",
+              }}
+            >
+              {locale === "es"
+                ? `${selectedParts.length} zonas`
+                : `${selectedParts.length} zones`}
+            </Text>
+          </>
+        ) : (
+          <Text
+            style={{
+              color: onboardingDarkTheme.textTertiary,
+              fontFamily: ff,
+              fontSize: rs(13),
+              fontWeight: "600",
+            }}
+          >
+            {locale === "es" ? "Toca para seleccionar" : "Tap to select"}
+          </Text>
+        )}
+      </View>
+
+      <View style={{ paddingBottom: rs(12) }}>
         <View
           style={{
-            marginBottom: 12,
-            borderRadius: 28,
-            borderWidth: 1,
-            borderColor: SCANNER_THEME.border,
-            backgroundColor: SCANNER_THEME.surface,
-            paddingHorizontal: 14,
-            paddingVertical: 12,
-            ...zenGlassEffect,
+            flexDirection: "row",
+            gap: rs(6),
+            marginBottom: rs(20),
           }}
         >
-          <Text
-            style={{
-              color: SCANNER_THEME.primaryText,
-              fontSize: 13,
-              fontWeight: "500",
-              marginBottom: 4,
-            }}
-          >
-            {copy.painMap.continueTitle}
-          </Text>
-          <Text
-            style={{
-              color: SCANNER_THEME.secondaryText,
-              fontSize: 12,
-              lineHeight: 18,
-              fontWeight: "400",
-            }}
-          >
-            {selectedParts.length > 0
-              ? `${selectedSummary}. ${copy.painMap.continueHint}`
-              : copy.painMap.empty}
-          </Text>
+          {[0, 1, 2].map((item) => (
+            <View
+              key={item}
+              style={{
+                width: item === 2 ? rs(24) : rs(8),
+                height: rs(4),
+                borderRadius: rs(2),
+                backgroundColor:
+                  item === 2
+                    ? onboardingDarkTheme.accentStrong
+                    : onboardingDarkTheme.border,
+              }}
+            />
+          ))}
         </View>
 
         <Pressable
           disabled={selectedParts.length === 0}
           onPress={() => onConfirm(selectedParts)}
           style={({ pressed }) => ({
-            width: "100%",
-            minHeight: 58,
-            borderRadius: 30,
-            borderWidth: 1,
-            borderColor: selectedParts.length > 0
-              ? SCANNER_THEME.accent
-              : SCANNER_THEME.border,
-            backgroundColor: selectedParts.length > 0
-              ? "rgba(94,234,212,0.16)"
-              : "rgba(255,255,255,0.035)",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: pressed && selectedParts.length > 0 ? 0.92 : 1,
-            paddingHorizontal: 16,
-            ...zenAmbientGlow(selectedParts.length > 0 ? 0.16 : 0.04, 22),
-            ...zenGlassEffect,
+            backgroundColor: onboardingDarkTheme.textPrimary,
+            borderRadius: rs(18),
+            opacity: selectedParts.length === 0 ? 0.4 : pressed ? 0.86 : 1,
+            paddingVertical: rs(18),
           })}
         >
           <Text
             style={{
-              color: selectedParts.length > 0
-                ? SCANNER_THEME.primaryText
-                : SCANNER_THEME.secondaryText,
-              fontSize: 16,
-              fontWeight: "500",
-              marginRight: 12,
-              letterSpacing: 0.3,
+              color: onboardingDarkTheme.background,
+              fontFamily: ff,
+              fontSize: rs(16),
+              fontWeight: "800",
+              textAlign: "center",
             }}
           >
-            {continueLabel}
+            {locale === "es" ? "Crear mi flujo" : "Create my flow"}
           </Text>
-          <View
-            style={{
-              width: 32,
-              height: 32,
-              borderRadius: 999,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: selectedParts.length > 0
-                ? zenDarkTheme.whiteSoft
-                : "rgba(255,255,255,0.06)",
-            }}
-          >
-            <ChevronRight
-              color={selectedParts.length > 0
-                ? SCANNER_THEME.primaryText
-                : SCANNER_THEME.secondaryText}
-              size={17}
-            />
-          </View>
         </Pressable>
       </View>
     </View>

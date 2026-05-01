@@ -52,10 +52,48 @@ export function PainMapScreen({ navigation }: Props) {
         showsVerticalScrollIndicator={false}
       >
         <View
-          className="flex-1 px-6 pb-6 pt-5"
-          style={{ maxWidth: 460, alignSelf: "center", width: "100%" }}
+          style={{
+            flex: 1,
+            maxWidth: 460,
+            alignSelf: "center",
+            width: "100%",
+            paddingHorizontal: 26,
+            paddingTop: 22,
+            paddingBottom: 28,
+          }}
         >
-          <View className="mb-4 flex-row justify-end">
+          <View
+            style={{
+              marginBottom: 14,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
+            <View>
+              <Text
+                style={{
+                  color: zenDarkTheme.textTertiary,
+                  fontSize: 11,
+                  fontWeight: "800",
+                  letterSpacing: 1.4,
+                  textTransform: "uppercase",
+                }}
+              >
+                {copy.painMap.step}
+              </Text>
+              <Text
+                style={{
+                  marginTop: 4,
+                  color: zenDarkTheme.textPrimary,
+                  fontSize: 26,
+                  fontWeight: "900",
+                  letterSpacing: -0.6,
+                }}
+              >
+                {copy.painMap.scanner}
+              </Text>
+            </View>
             <LanguageToggle
               locale={locale}
               onToggle={() => void toggleLocale()}

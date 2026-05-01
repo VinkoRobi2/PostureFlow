@@ -12,6 +12,11 @@ import {
 } from "react";
 import { ApiError, api } from "../services/api";
 import {
+  configureGoogleSignIn,
+  signInWithGoogle,
+  signOutGoogle,
+} from "../services/google-auth";
+import {
   readJson,
   readString,
   removeItem,
@@ -79,11 +84,7 @@ type AppContextValue = {
     password: string,
     lastName?: string,
   ) => Promise<AuthResult>;
-  continueWithGoogle: (
-    email: string,
-    firstName?: string,
-    lastName?: string,
-  ) => Promise<AuthResult>;
+  continueWithGoogle: () => Promise<AuthResult>;
   verifyPendingEmail: (code: string) => Promise<AuthResult>;
   resendVerification: () => Promise<AuthResult | null>;
   logout: () => Promise<void>;
@@ -167,14 +168,6 @@ function createLocalSummary(routine: RoutineCard, locale: LocaleCode): Completio
       es: "Volver al Dashboard",
     },
   };
-}
-
-function getGoogleFirstName(email: string) {
-  const candidate = email.split("@")[0]?.split(/[._-]/)[0] ?? "Google";
-  const trimmed = candidate.trim();
-  return trimmed.length > 1
-    ? `${trimmed.charAt(0).toUpperCase()}${trimmed.slice(1)}`
-    : "Google";
 }
 
 function getSetupOptionIdForScreenHours(hours: number) {
@@ -429,6 +422,10 @@ export function AppProvider({ children }: PropsWithChildren) {
   }, [applyAuthenticatedResult, authSession, clearSessionState, flushSyncQueue, isOnline, locale]);
 
   useEffect(() => {
+    configureGoogleSignIn();
+  }, []);
+
+  useEffect(() => {
     const loadCachedState = async () => {
       try {
         const [
@@ -621,24 +618,15 @@ export function AppProvider({ children }: PropsWithChildren) {
   );
 
   const continueWithGoogle = useCallback(
-    async (email: string, firstName?: string, lastName?: string) => {
-      const trimmedEmail = email.trim().toLowerCase();
+    async () => {
+      const googleResult = await signInWithGoogle(locale);
+      const result = await api.loginWithGoogle({
+        idToken: googleResult.idToken,
+        serverAuthCode: googleResult.serverAuthCode,
+        locale: toBackendLocale(locale),
+        profile: googleResult.profile,
+      });
 
-      if (!trimmedEmail) {
-        throw new Error(
-          locale === "es"
-            ? "Agrega tu correo antes de continuar con Google."
-            : "Add your email before continuing with Google.",
-        );
-      }
-
-      const result = await api.loginWithGoogle(
-        trimmedEmail,
-        firstName?.trim() || getGoogleFirstName(trimmedEmail),
-        toBackendLocale(locale),
-        lastName?.trim() || undefined,
-        `google:${trimmedEmail}`,
-      );
       await applyAuthenticatedResult(result);
       return result;
     },
@@ -689,8 +677,12 @@ export function AppProvider({ children }: PropsWithChildren) {
       }
     }
 
+    if (authSession?.provider === "google") {
+      await signOutGoogle();
+    }
+
     await clearSessionState();
-  }, [authSession?.token, clearSessionState, isOnline]);
+  }, [authSession?.provider, authSession?.token, clearSessionState, isOnline]);
 
   const setOnboardingName = useCallback((value: string) => {
     setOnboardingDraft((current) => ({
