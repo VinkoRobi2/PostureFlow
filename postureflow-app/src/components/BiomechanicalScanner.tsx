@@ -2,8 +2,16 @@ import Body, {
   type ExtendedBodyPart,
   type Slug,
 } from "react-native-body-highlighter";
+import { ArrowRight, Check, RotateCcw, User, Users } from "lucide-react-native";
 import { useMemo, useState } from "react";
-import { type DimensionValue, Pressable, Text, View } from "react-native";
+import {
+  type DimensionValue,
+  Pressable,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { messages } from "../i18n/messages";
 import { onboardingDarkTheme } from "../theme/onboarding-pro-dark";
 import type { LocaleCode, PainRegion } from "../types/app";
@@ -65,16 +73,18 @@ const REGION_ORDER: ScannerRegionId[] = [
 
 const BODY_LAYOUTS = {
   compact: {
-    width: rs(134),
-    height: rs(340),
-    scale: 0.74,
+    width: rs(102),
+    height: rs(250),
+    scale: 0.54,
   },
   focus: {
-    width: rs(170),
-    height: rs(400),
-    scale: 0.94,
+    width: rs(138),
+    height: rs(292),
+    scale: 0.66,
   },
 } as const;
+
+const VIEW_SEQUENCE: FigureMode[] = ["front", "back", "both"];
 
 const HOTSPOTS: Record<ScannerView, Hotspot[]> = {
   front: [
@@ -323,7 +333,7 @@ function BodyHotspots({
   onToggle: (part: ScannerRegionId) => void;
 }) {
   return (
-    <View pointerEvents="box-none" style={{ position: "absolute", inset: 0 }}>
+    <View pointerEvents="box-none" style={StyleSheet.absoluteFillObject}>
       {HOTSPOTS[side].map((hotspot, index) => {
         const isSelected = selectedParts.includes(hotspot.id);
 
@@ -373,34 +383,52 @@ function BodyFigure({
   const size = BODY_LAYOUTS[layout];
 
   return (
-    <View style={{ alignItems: "center", flex: 1, minHeight: 0 }}>
-      <Text
-        style={{
-          color: onboardingDarkTheme.textTertiary,
-          fontFamily: ff,
-          fontSize: rs(9),
-          fontWeight: "800",
-          letterSpacing: 1.5,
-          marginBottom: rs(10),
-          textTransform: "uppercase",
-        }}
-      >
-        {label}
-      </Text>
-
+    <View style={{ flex: 1, minHeight: 0, minWidth: 0 }}>
       <View
         style={{
           flex: 1,
           minHeight: 0,
           width: "100%",
-          borderRadius: rs(16),
+          borderRadius: rs(20),
           backgroundColor: onboardingDarkTheme.backgroundRaised,
+          borderWidth: hairline,
+          borderColor: onboardingDarkTheme.border,
           alignItems: "center",
           justifyContent: "center",
-          overflow: "hidden",
           position: "relative",
+          overflow: "hidden",
         }}
       >
+        <View
+          style={{
+            position: "absolute",
+            top: rs(10),
+            alignSelf: "center",
+            borderRadius: rs(999),
+            backgroundColor: onboardingDarkTheme.porcelain,
+            borderWidth: hairline,
+            borderColor: onboardingDarkTheme.border,
+            paddingHorizontal: rs(10),
+            paddingVertical: rs(5),
+            zIndex: 2,
+          }}
+        >
+          <Text
+            numberOfLines={1}
+            style={{
+              color: onboardingDarkTheme.textSecondary,
+              fontFamily: ff,
+              fontSize: rs(10),
+              fontWeight: "800",
+              lineHeight: rs(13),
+              textAlign: "center",
+              includeFontPadding: false,
+            }}
+          >
+            {label}
+          </Text>
+        </View>
+
         <View
           style={{
             width: size.width,
@@ -408,6 +436,7 @@ function BodyFigure({
             position: "relative",
             alignItems: "center",
             justifyContent: "center",
+            marginTop: rs(8),
           }}
         >
           <Body
@@ -440,16 +469,52 @@ function BodyFigure({
   );
 }
 
+function ViewModeIcon({
+  active,
+  mode,
+}: {
+  active: boolean;
+  mode: FigureMode;
+}) {
+  const iconColor = active
+    ? onboardingDarkTheme.background
+    : onboardingDarkTheme.textSecondary;
+  const iconSize = rs(18);
+  const iconStroke = active ? 2.1 : 1.8;
+
+  if (mode === "front") {
+    return <User color={iconColor} size={iconSize} strokeWidth={iconStroke} />;
+  }
+
+  if (mode === "back") {
+    return (
+      <RotateCcw color={iconColor} size={iconSize} strokeWidth={iconStroke} />
+    );
+  }
+
+  return <Users color={iconColor} size={iconSize} strokeWidth={iconStroke} />;
+}
+
 export function BiomechanicalScanner({
   initialSelectedParts = [],
   locale,
   painRegions,
   onConfirm,
 }: BiomechanicalScannerProps) {
+  const { height: screenH, width: screenW } = useWindowDimensions();
   const [selectedParts, setSelectedParts] =
     useState<ScannerRegionId[]>(initialSelectedParts);
   const [figureMode, setFigureMode] = useState<FigureMode>("both");
   const copy = messages[locale];
+  const compactScreen = screenH < 720 || screenW < 380;
+  const figurePanelHeight =
+    figureMode === "both"
+      ? compactScreen
+        ? rs(288)
+        : rs(306)
+      : compactScreen
+        ? rs(326)
+        : rs(350);
 
   const frontData = useMemo(
     () => selectedParts.flatMap((part) => REGION_TO_BODY_PARTS[part]?.front ?? []),
@@ -467,6 +532,24 @@ export function BiomechanicalScanner({
     const match = painRegions.find((region) => region.id === regionId);
     return match?.label[locale] ?? regionId.replace(/_/g, " ");
   });
+  const hasSelection = selectedParts.length > 0;
+  const selectedPreview = selectedZoneLabels.slice(0, 3).join(" / ");
+  const selectedZoneText =
+    selectedZoneLabels.length > 3
+      ? `${selectedPreview} +${selectedZoneLabels.length - 3}`
+      : selectedPreview;
+  const viewOptions: Record<FigureMode, { label: string; hint: string }> =
+    locale === "es"
+      ? {
+          front: { label: "Frontal", hint: "Vista" },
+          back: { label: "Posterior", hint: "Vista" },
+          both: { label: "Completo", hint: "2 vistas" },
+        }
+      : {
+          front: { label: "Front", hint: "View" },
+          back: { label: "Back", hint: "View" },
+          both: { label: "Both", hint: "Views" },
+        };
 
   const togglePart = (part: ScannerRegionId) => {
     setSelectedParts((current) =>
@@ -490,51 +573,95 @@ export function BiomechanicalScanner({
   };
 
   return (
-    <View style={{ width: "100%", flex: 1, height: "100%", minHeight: 0 }}>
+    <View style={{ width: "100%" }}>
       <View
         style={{
-          backgroundColor: onboardingDarkTheme.backgroundRaised,
-          borderRadius: rs(999),
-          padding: rs(4),
           flexDirection: "row",
-          marginBottom: rs(14),
+          gap: compactScreen ? rs(7) : rs(9),
+          marginBottom: compactScreen ? rs(10) : rs(12),
         }}
       >
-        {([
-          { id: "both", label: copy.painMap.both },
-          { id: "front", label: copy.painMap.front },
-          { id: "back", label: copy.painMap.back },
-        ] as const).map((option) => {
-          const active = figureMode === option.id;
+        {VIEW_SEQUENCE.map((mode) => {
+          const active = figureMode === mode;
+          const option = viewOptions[mode];
 
           return (
             <Pressable
-              key={option.id}
-              onPress={() => setFigureMode(option.id)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: active }}
+              key={mode}
+              onPress={() => setFigureMode(mode)}
               style={({ pressed }) => ({
                 flex: 1,
-                borderRadius: rs(999),
+                minWidth: 0,
+                minHeight: compactScreen ? rs(62) : rs(68),
+                borderRadius: rs(18),
+                borderWidth: hairline,
+                borderColor: active
+                  ? onboardingDarkTheme.textPrimary
+                  : onboardingDarkTheme.border,
                 backgroundColor: active
                   ? onboardingDarkTheme.textPrimary
-                  : "transparent",
-                opacity: pressed ? 0.85 : 1,
-                paddingVertical: rs(9),
+                  : onboardingDarkTheme.porcelain,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: pressed ? 0.9 : 1,
+                paddingHorizontal: compactScreen ? rs(6) : rs(8),
+                paddingVertical: compactScreen ? rs(8) : rs(10),
+                transform: [{ scale: pressed ? 0.99 : 1 }],
               })}
             >
+              <View
+                style={{
+                  width: compactScreen ? rs(28) : rs(32),
+                  height: compactScreen ? rs(28) : rs(32),
+                  borderRadius: compactScreen ? rs(10) : rs(12),
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: active
+                    ? "rgba(237,234,228,0.14)"
+                    : onboardingDarkTheme.backgroundRaised,
+                  marginBottom: rs(5),
+                }}
+              >
+                <ViewModeIcon active={active} mode={mode} />
+              </View>
               <Text
+                adjustsFontSizeToFit
+                minimumFontScale={0.82}
+                numberOfLines={1}
                 style={{
                   color: active
                     ? onboardingDarkTheme.background
-                    : onboardingDarkTheme.textTertiary,
+                    : onboardingDarkTheme.textPrimary,
                   fontFamily: ff,
-                  fontSize: rs(11),
-                  fontWeight: active ? "800" : "700",
-                  letterSpacing: 0.5,
+                  fontSize: compactScreen ? rs(11) : rs(12),
+                  fontWeight: "900",
+                  includeFontPadding: false,
+                  lineHeight: compactScreen ? rs(14) : rs(15),
                   textAlign: "center",
-                  textTransform: "uppercase",
                 }}
               >
                 {option.label}
+              </Text>
+              <Text
+                adjustsFontSizeToFit
+                minimumFontScale={0.86}
+                numberOfLines={1}
+                style={{
+                  color: active
+                    ? "rgba(237,234,228,0.72)"
+                    : onboardingDarkTheme.textTertiary,
+                  fontFamily: ff,
+                  fontSize: compactScreen ? rs(9) : rs(10),
+                  fontWeight: "700",
+                  includeFontPadding: false,
+                  lineHeight: compactScreen ? rs(12) : rs(13),
+                  marginTop: rs(2),
+                  textAlign: "center",
+                }}
+              >
+                {option.hint}
               </Text>
             </Pressable>
           );
@@ -546,15 +673,14 @@ export function BiomechanicalScanner({
           backgroundColor: onboardingDarkTheme.porcelain,
           borderWidth: hairline,
           borderColor: onboardingDarkTheme.border,
-          borderRadius: rs(28),
-          flex: 1,
-          minHeight: 0,
+          borderRadius: rs(24),
           flexDirection: "row",
-          gap: rs(12),
+          gap: compactScreen ? rs(8) : rs(10),
+          height: figurePanelHeight,
           alignItems: "stretch",
-          paddingHorizontal: rs(20),
-          paddingVertical: rs(24),
-          marginBottom: rs(8),
+          paddingHorizontal: compactScreen ? rs(10) : rs(14),
+          paddingVertical: compactScreen ? rs(12) : rs(16),
+          marginBottom: compactScreen ? rs(8) : rs(10),
           justifyContent: "center",
         }}
       >
@@ -587,78 +713,161 @@ export function BiomechanicalScanner({
         style={{
           flexDirection: "row",
           alignItems: "center",
-          justifyContent: "space-between",
-          gap: rs(8),
-          marginBottom: rs(8),
-          paddingHorizontal: rs(4),
-          paddingVertical: rs(12),
+          gap: rs(10),
+          marginBottom: compactScreen ? rs(10) : rs(12),
+          borderRadius: rs(18),
+          borderWidth: hairline,
+          borderColor: hasSelection
+            ? onboardingDarkTheme.accentStrong
+            : onboardingDarkTheme.border,
+          backgroundColor: hasSelection
+            ? onboardingDarkTheme.accentSoft
+            : onboardingDarkTheme.porcelain,
+          paddingHorizontal: compactScreen ? rs(12) : rs(14),
+          paddingVertical: compactScreen ? rs(11) : rs(13),
+          minHeight: compactScreen ? rs(54) : rs(60),
         }}
       >
-        {selectedParts.length > 0 ? (
-          <>
-            <View
-              style={{
-                alignItems: "center",
-                flex: 1,
-                flexDirection: "row",
-                gap: rs(8),
-              }}
-            >
-            <View
-              style={{
-                width: rs(7),
-                height: rs(7),
-                borderRadius: rs(4),
-                backgroundColor: onboardingDarkTheme.accentStrong,
-              }}
-            />
+        <View
+          style={{
+            width: rs(30),
+            height: rs(30),
+            borderRadius: rs(11),
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: hasSelection
+              ? onboardingDarkTheme.accentStrong
+              : onboardingDarkTheme.backgroundRaised,
+          }}
+        >
+          <Check
+            color={
+              hasSelection
+                ? onboardingDarkTheme.background
+                : onboardingDarkTheme.textTertiary
+            }
+            size={rs(16)}
+            strokeWidth={2.2}
+          />
+        </View>
+
+        <View style={{ flex: 1, minWidth: 0 }}>
+          <Text
+            numberOfLines={2}
+            style={{
+              color: hasSelection
+                ? onboardingDarkTheme.textPrimary
+                : onboardingDarkTheme.textSecondary,
+              fontFamily: ff,
+              fontSize: rs(13),
+              fontWeight: "800",
+              lineHeight: rs(18),
+            }}
+          >
+            {hasSelection ? selectedZoneText : copy.painMap.helper}
+          </Text>
+          {hasSelection ? (
             <Text
-              numberOfLines={1}
               style={{
-                color: onboardingDarkTheme.textPrimary,
-                flex: 1,
+                color: onboardingDarkTheme.textSecondary,
                 fontFamily: ff,
-                fontSize: rs(13),
+                fontSize: rs(11),
                 fontWeight: "700",
-              }}
-            >
-              {selectedZoneLabels.join(" · ")}
-            </Text>
-            </View>
-            <Text
-              style={{
-                color: onboardingDarkTheme.border,
-                fontFamily: ff,
-                fontSize: rs(13),
-                fontWeight: "400",
-                marginLeft: "auto",
+                lineHeight: rs(15),
+                marginTop: rs(2),
               }}
             >
               {locale === "es"
-                ? `${selectedParts.length} zonas`
-                : `${selectedParts.length} zones`}
+                ? selectedParts.length === 1
+                  ? "1 zona seleccionada"
+                  : `${selectedParts.length} zonas seleccionadas`
+                : selectedParts.length === 1
+                  ? "1 zone selected"
+                  : `${selectedParts.length} zones selected`}
             </Text>
-          </>
-        ) : (
-          <Text
-            style={{
-              color: onboardingDarkTheme.textTertiary,
-              fontFamily: ff,
-              fontSize: rs(13),
-              fontWeight: "600",
-            }}
-          >
-            {locale === "es" ? "Toca para seleccionar" : "Tap to select"}
-          </Text>
-        )}
+          ) : null}
+        </View>
       </View>
 
-      <View style={{ paddingBottom: rs(12) }}>
+      <View style={{ paddingBottom: compactScreen ? rs(4) : rs(10) }}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !hasSelection }}
+          disabled={!hasSelection}
+          onPress={() => onConfirm(selectedParts)}
+          style={({ pressed }) => ({
+            backgroundColor: hasSelection
+              ? onboardingDarkTheme.textPrimary
+              : onboardingDarkTheme.backgroundRaised,
+            borderColor: hasSelection
+              ? onboardingDarkTheme.textPrimary
+              : onboardingDarkTheme.border,
+            borderRadius: rs(22),
+            borderWidth: hairline,
+            minHeight: compactScreen ? rs(58) : rs(62),
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexDirection: "row",
+            opacity: pressed ? 0.9 : 1,
+            paddingHorizontal: rs(16),
+            paddingVertical: compactScreen ? rs(12) : rs(14),
+            shadowColor: onboardingDarkTheme.textPrimary,
+            shadowOffset: { width: 0, height: rs(10) },
+            shadowOpacity: hasSelection ? 0.16 : 0,
+            shadowRadius: rs(16),
+            elevation: hasSelection ? 4 : 0,
+            transform: [{ scale: pressed ? 0.99 : 1 }],
+            width: "100%",
+          })}
+        >
+          <Text
+            adjustsFontSizeToFit
+            minimumFontScale={0.84}
+            numberOfLines={2}
+            style={{
+              color: hasSelection
+                ? onboardingDarkTheme.background
+                : onboardingDarkTheme.textTertiary,
+              flex: 1,
+              fontFamily: ff,
+              fontSize: rs(15),
+              fontWeight: "900",
+              lineHeight: rs(19),
+              paddingRight: rs(12),
+            }}
+          >
+            {hasSelection ? copy.painMap.continueWithSelection : copy.painMap.empty}
+          </Text>
+
+          <View
+            style={{
+              width: rs(38),
+              height: rs(38),
+              borderRadius: rs(14),
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: hasSelection
+                ? "rgba(237,234,228,0.14)"
+                : onboardingDarkTheme.porcelain,
+            }}
+          >
+            <ArrowRight
+              color={
+                hasSelection
+                  ? onboardingDarkTheme.background
+                  : onboardingDarkTheme.textTertiary
+              }
+              size={rs(19)}
+              strokeWidth={2}
+            />
+          </View>
+        </Pressable>
+
         <View
           style={{
             flexDirection: "row",
             gap: rs(6),
-            marginBottom: rs(20),
+            marginTop: compactScreen ? rs(12) : rs(16),
           }}
         >
           {[0, 1, 2].map((item) => (
@@ -676,29 +885,6 @@ export function BiomechanicalScanner({
             />
           ))}
         </View>
-
-        <Pressable
-          disabled={selectedParts.length === 0}
-          onPress={() => onConfirm(selectedParts)}
-          style={({ pressed }) => ({
-            backgroundColor: onboardingDarkTheme.textPrimary,
-            borderRadius: rs(18),
-            opacity: selectedParts.length === 0 ? 0.4 : pressed ? 0.86 : 1,
-            paddingVertical: rs(18),
-          })}
-        >
-          <Text
-            style={{
-              color: onboardingDarkTheme.background,
-              fontFamily: ff,
-              fontSize: rs(16),
-              fontWeight: "800",
-              textAlign: "center",
-            }}
-          >
-            {locale === "es" ? "Crear mi flujo" : "Create my flow"}
-          </Text>
-        </Pressable>
       </View>
     </View>
   );

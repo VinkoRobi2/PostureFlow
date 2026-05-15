@@ -3,7 +3,9 @@ import {
   Animated,
   Easing,
   Pressable,
+  ScrollView,
   Text,
+  useWindowDimensions,
   Vibration,
   View,
 } from "react-native";
@@ -21,6 +23,7 @@ const SESSION_MS = 15000;
 const BREATH_EASING = Easing.bezier(0.42, 0, 0.2, 1);
 
 export function OnboardingAhaScreen({ navigation }: Props) {
+  const { height: screenH, width: screenW } = useWindowDimensions();
   const { bootstrap, locale, onboardingDraft, painSelection } = useAppModel();
   const copy = getLocalizedOnboardingText(locale);
   const resolvedBootstrap = bootstrap ?? createFallbackBootstrap(locale);
@@ -35,6 +38,16 @@ export function OnboardingAhaScreen({ navigation }: Props) {
   const textTranslate = useRef(new Animated.Value(12)).current;
   const timeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const compactScreen = screenH < 740 || screenW < 380;
+  const tinyScreen = screenH < 690 || screenW < 360;
+  const orbSize = tinyScreen ? rs(168) : compactScreen ? rs(190) : rs(230);
+  const auraInnerSize = tinyScreen ? rs(124) : compactScreen ? rs(142) : rs(170);
+  const breathCoreSize = tinyScreen ? rs(80) : compactScreen ? rs(92) : rs(110);
+  const readyCta =
+    locale === "es" ? "Continuar cuando este listo" : "Continue when ready";
+  const pendingCta =
+    locale === "es" ? "Completa la respiracion" : "Finish the breath";
 
   const primaryZoneLabel =
     painSelection.length > 0
@@ -114,7 +127,7 @@ export function OnboardingAhaScreen({ navigation }: Props) {
             },
             {
               label: "Exhale",
-              detail: "Let the weight melt downward.",
+              detail: "Let the weight soften downward.",
               duration: 3500,
               scale: 0.88,
               auraScale: 0.94,
@@ -262,227 +275,173 @@ export function OnboardingAhaScreen({ navigation }: Props) {
     <OnboardingFrame
       contentStyle={{
         flex: 1,
-        paddingHorizontal: screenPadH,
-        paddingTop: screenPadT,
-        paddingBottom: rs(26),
+        paddingHorizontal: 0,
+        paddingTop: 0,
+        paddingBottom: 0,
       }}
     >
-      <View style={{ flex: 1 }}>
-        <View style={{ marginBottom: rs(28) }}>
-          <Text
-            style={{
-              color: onboardingDarkTheme.accentStrong,
-              fontFamily: ff,
-              fontSize: rs(10),
-              fontWeight: "800",
-              letterSpacing: 2.5,
-              textTransform: "uppercase",
-            }}
-          >
-            {locale === "es" ? "RESET DE RESPIRACION" : "BREATHING RESET"}
-          </Text>
-          <Text
-            style={{
-              color: onboardingDarkTheme.textPrimary,
-              fontFamily: ff,
-              marginTop: rs(12),
-              fontSize: rs(36),
-              fontWeight: "800",
-              lineHeight: rs(38),
-              letterSpacing: -1.2,
-            }}
-          >
-            {copy.ahaGreeting(onboardingDraft.firstName)}
-          </Text>
-          <Text
-            style={{
-              color: onboardingDarkTheme.textTertiary,
-              fontFamily: ff,
-              marginTop: rs(10),
-              maxWidth: rs(330),
-              fontSize: rs(13),
-              fontWeight: "500",
-              lineHeight: rs(20),
-            }}
-          >
-            {personalizedTitle}
-          </Text>
-        </View>
-
-        <View
-          style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            paddingVertical: rs(8),
-          }}
-        >
-          <View style={{ width: "100%", alignItems: "center" }}>
-            <View
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingHorizontal: screenPadH,
+          paddingTop: compactScreen ? rs(32) : screenPadT,
+          paddingBottom: rs(40),
+        }}
+      >
+        <View className="flex-grow justify-between">
+          <View className="flex-shrink-0">
+            <Text
+              className="text-[10px] font-black uppercase tracking-[2.5px] text-[#B77551]"
+              style={{ fontFamily: ff }}
+            >
+              {locale === "es" ? "RESET DE RESPIRACION" : "BREATHING RESET"}
+            </Text>
+            <Text
+              className="mt-3 font-black text-[#161412]"
               style={{
-                width: rs(230),
-                height: rs(230),
-                alignItems: "center",
-                justifyContent: "center",
-                position: "relative",
+                fontFamily: ff,
+                fontSize: compactScreen ? rs(32) : rs(38),
+                lineHeight: compactScreen ? rs(36) : rs(42),
               }}
             >
-              <Animated.View
-                pointerEvents="none"
+              {copy.ahaGreeting(onboardingDraft.firstName)}
+            </Text>
+            <Text
+              className="mt-3 text-sm font-semibold text-[#8C857B]"
+              style={{ fontFamily: ff, lineHeight: rs(22) }}
+            >
+              {personalizedTitle}
+            </Text>
+          </View>
+
+          <View
+            className="items-center justify-center"
+            style={{
+              paddingVertical: compactScreen ? rs(26) : rs(48),
+            }}
+          >
+            <View className="w-full items-center">
+              <View
                 style={{
-                  position: "absolute",
-                  width: rs(230),
-                  height: rs(230),
-                  borderRadius: rs(999),
-                  backgroundColor: "#E0DBD3",
-                  transform: [{ scale: auraScale }],
+                  width: orbSize,
+                  height: orbSize,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  position: "relative",
                 }}
-              />
-              <Animated.View
-                pointerEvents="none"
-                style={{
-                  position: "absolute",
-                  width: rs(170),
-                  height: rs(170),
-                  borderRadius: rs(999),
-                  backgroundColor: "#D8D2C8",
-                  opacity: auraOpacity,
-                }}
-              />
+              >
+                <Animated.View
+                  pointerEvents="none"
+                  style={{
+                    position: "absolute",
+                    width: orbSize,
+                    height: orbSize,
+                    borderRadius: rs(999),
+                    backgroundColor: "#E4DED6",
+                    transform: [{ scale: auraScale }],
+                  }}
+                />
+                <Animated.View
+                  pointerEvents="none"
+                  style={{
+                    position: "absolute",
+                    width: auraInnerSize,
+                    height: auraInnerSize,
+                    borderRadius: rs(999),
+                    backgroundColor: "#DDD5CA",
+                    opacity: auraOpacity,
+                  }}
+                />
+
+                <Animated.View
+                  style={{
+                    width: breathCoreSize,
+                    height: breathCoreSize,
+                    borderRadius: rs(999),
+                    backgroundColor: onboardingDarkTheme.accentStrong,
+                    shadowColor: onboardingDarkTheme.accentStrong,
+                    shadowOffset: { width: 0, height: 0 },
+                    shadowOpacity: 0.25,
+                    shadowRadius: rs(40),
+                    elevation: 8,
+                    transform: [{ scale: breathScale }],
+                  }}
+                />
+              </View>
 
               <Animated.View
+                className="items-center"
                 style={{
-                  width: rs(110),
-                  height: rs(110),
+                  marginTop: compactScreen ? rs(22) : rs(34),
+                  opacity: textOpacity,
+                  transform: [{ translateY: textTranslate }],
+                }}
+              >
+                <Text
+                  className="font-black text-[#161412]"
+                  style={{
+                    fontFamily: ff,
+                    fontSize: compactScreen ? rs(30) : rs(36),
+                  }}
+                >
+                  {currentPhase.label}
+                </Text>
+                <Text
+                  className="mt-2 max-w-[290px] text-center text-sm font-semibold text-[#8C857B]"
+                  style={{ fontFamily: ff, lineHeight: rs(21) }}
+                >
+                  {currentPhase.detail}
+                </Text>
+              </Animated.View>
+            </View>
+          </View>
+
+          <View className="flex-shrink-0 pb-10">
+            <View className="h-1 overflow-hidden rounded-full bg-[#D8D1C7]">
+              <Animated.View
+                style={{
+                  height: "100%",
+                  width: progressWidth,
                   borderRadius: rs(999),
                   backgroundColor: onboardingDarkTheme.accentStrong,
-                  shadowColor: onboardingDarkTheme.accentStrong,
-                  shadowOffset: { width: 0, height: 0 },
-                  shadowOpacity: 0.25,
-                  shadowRadius: rs(40),
-                  elevation: 8,
-                  transform: [{ scale: breathScale }],
                 }}
               />
             </View>
 
-            <Animated.View
-              style={{
-                marginTop: rs(32),
-                alignItems: "center",
-                opacity: textOpacity,
-                transform: [{ translateY: textTranslate }],
-              }}
-            >
+            <View className="mt-3 flex-row items-start gap-4">
               <Text
-                style={{
-                  color: onboardingDarkTheme.textPrimary,
-                  fontFamily: ff,
-                  fontSize: rs(34),
-                  fontWeight: "800",
-                  letterSpacing: -1,
-                }}
+                className="flex-shrink-0 text-xs font-black text-[#8C857B]"
+                style={{ fontFamily: ff }}
               >
-                {currentPhase.label}
+                {elapsedSeconds} / 15s
               </Text>
               <Text
-                style={{
-                  marginTop: rs(8),
-                  color: onboardingDarkTheme.textTertiary,
-                  fontFamily: ff,
-                  fontSize: rs(13),
-                  fontWeight: "500",
-                  lineHeight: rs(20),
-                  textAlign: "center",
-                  maxWidth: rs(270),
-                }}
+                className="min-w-0 flex-1 flex-shrink text-right text-xs font-semibold italic text-[#8C857B]"
+                style={{ fontFamily: ff, lineHeight: rs(18) }}
               >
-                {currentPhase.detail}
+                {copy.ahaFooter}
               </Text>
-            </Animated.View>
+            </View>
+
+            <Pressable
+              className="mt-7 h-14 w-11/12 self-center items-center justify-center rounded-full bg-black"
+              disabled={!isDone}
+              onPress={() => navigation.replace("OnboardingTrust")}
+              style={({ pressed }) => ({
+                opacity: isDone ? (pressed ? 0.86 : 1) : 0.38,
+              })}
+            >
+              <Text
+                className="text-base font-black text-white"
+                style={{ fontFamily: ff }}
+              >
+                {isDone ? readyCta : pendingCta}
+              </Text>
+            </Pressable>
           </View>
         </View>
-
-        <View style={{ paddingBottom: 0 }}>
-          <View
-            style={{
-              height: rs(3),
-              borderRadius: rs(2),
-              overflow: "hidden",
-              backgroundColor: onboardingDarkTheme.border,
-            }}
-          >
-            <Animated.View
-              style={{
-                height: "100%",
-                width: progressWidth,
-                borderRadius: rs(2),
-                backgroundColor: onboardingDarkTheme.accentStrong,
-              }}
-            />
-          </View>
-
-          <View
-            style={{
-              marginTop: rs(10),
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: rs(14),
-            }}
-          >
-            <Text
-              style={{
-                color: onboardingDarkTheme.textTertiary,
-                fontFamily: ff,
-                fontSize: rs(11),
-                fontWeight: "700",
-                letterSpacing: 0.5,
-              }}
-            >
-              {elapsedSeconds} / 15s
-            </Text>
-            <Text
-              numberOfLines={1}
-              style={{
-                color: onboardingDarkTheme.textTertiary,
-                flex: 1,
-                fontFamily: ff,
-                fontSize: rs(11),
-                fontStyle: "italic",
-                fontWeight: "400",
-                textAlign: "right",
-              }}
-            >
-              {copy.ahaFooter}
-            </Text>
-          </View>
-
-          <Pressable
-            disabled={!isDone}
-            onPress={() => navigation.replace("OnboardingTrust")}
-            style={({ pressed }) => ({
-              marginTop: rs(36),
-              backgroundColor: onboardingDarkTheme.textPrimary,
-              borderRadius: rs(18),
-              opacity: isDone ? (pressed ? 0.9 : 1) : 0.4,
-              paddingVertical: rs(18),
-            })}
-          >
-            <Text
-              style={{
-                textAlign: "center",
-                color: onboardingDarkTheme.background,
-                fontFamily: ff,
-                fontSize: rs(16),
-                fontWeight: "700",
-              }}
-            >
-              {copy.ahaCta}
-            </Text>
-          </Pressable>
-        </View>
-      </View>
+      </ScrollView>
     </OnboardingFrame>
   );
 }

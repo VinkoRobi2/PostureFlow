@@ -24,6 +24,7 @@ model User {
   onboarding            UserOnboarding?
   routineDownloads      UserRoutineDownload[]
   sessions              RoutineSession[]
+  exerciseProgress      UserProgress[]
   syncLogs              SyncLog[]
   authSessions          AuthSession[]
   verificationCodes     EmailVerificationCode[]
@@ -136,6 +137,33 @@ model RoutineSession {
   routine       Routine       @relation(fields: [routineId], references: [id], onDelete: Cascade)
 }
 
+model Exercise {
+  id           String           @id
+  title        String
+  youtubeId    String
+  startTime    Int
+  endTime      Int
+  category     ExerciseCategory
+  duration     String
+  sortOrder    Int
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+  userProgress UserProgress[]
+}
+
+model UserProgress {
+  userId      String
+  exerciseId  String
+  completed   Boolean  @default(false)
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise    Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@id([userId, exerciseId])
+}
+
 model SyncLog {
   id          String   @id @default(cuid())
   userId      String
@@ -155,6 +183,12 @@ enum RoutineCategory {
   RECOVERY
   MOBILITY
   BREATHWORK
+}
+
+enum ExerciseCategory {
+  UPPER_BODY
+  LOWER_BODY
+  FULL_FLOW
 }
 
 enum SessionStatus {

@@ -1,18 +1,23 @@
 import { StatusBar } from "expo-status-bar";
-import { Dimensions, Pressable, ScrollView, Text, View } from "react-native";
+import {
+  ScrollView,
+  Text,
+  useWindowDimensions,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { BiomechanicalScanner } from "../../components/BiomechanicalScanner";
+import { LanguageToggle } from "../../components/LanguageToggle";
 import { createFallbackBootstrap } from "../../data/fallback-data";
 import { useAppModel } from "../../providers/app-provider";
 import { onboardingDarkTheme } from "../../theme/onboarding-pro-dark";
 import type { AppScreenProps } from "../../types/app";
-import { ff, hairline, rs, screenPadH } from "../../utils/responsive";
+import { ff, rs, screenPadH } from "../../utils/responsive";
 
 type Props = AppScreenProps<"OnboardingScanner">;
 
-const H = Dimensions.get("window").height;
-
 export function OnboardingScannerScreen({ navigation }: Props) {
+  const { height: screenH, width: screenW } = useWindowDimensions();
   const {
     bootstrap,
     locale,
@@ -21,6 +26,7 @@ export function OnboardingScannerScreen({ navigation }: Props) {
     toggleLocale,
   } = useAppModel();
   const resolvedBootstrap = bootstrap ?? createFallbackBootstrap(locale);
+  const compactScreen = screenH < 720 || screenW < 380;
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: onboardingDarkTheme.background }}>
@@ -34,75 +40,23 @@ export function OnboardingScannerScreen({ navigation }: Props) {
           width: "100%",
           maxWidth: rs(460),
           alignSelf: "center",
-          minHeight: H,
+          minHeight: screenH,
           paddingHorizontal: screenPadH,
-          paddingTop: rs(24),
-          paddingBottom: rs(18),
+          paddingTop: compactScreen ? rs(14) : rs(24),
+          paddingBottom: compactScreen ? rs(14) : rs(18),
         }}
       >
-        <View style={{ flex: 1, height: "100%", minHeight: 0 }}>
+        <View style={{ flexGrow: 1 }}>
           <View
             style={{
               alignItems: "flex-end",
-              marginBottom: rs(12),
+              marginBottom: compactScreen ? rs(8) : rs(12),
             }}
           >
-            <Pressable
-              onPress={() => void toggleLocale()}
-              style={{
-                flexDirection: "row",
-                gap: rs(4),
-                backgroundColor: onboardingDarkTheme.card,
-                borderWidth: hairline,
-                borderColor: onboardingDarkTheme.border,
-                borderRadius: rs(999),
-                padding: rs(3),
-              }}
-            >
-              <Text
-                style={{
-                  backgroundColor:
-                    locale === "en"
-                      ? onboardingDarkTheme.violetStrong
-                      : "transparent",
-                  color:
-                    locale === "en"
-                      ? onboardingDarkTheme.background
-                      : onboardingDarkTheme.textTertiary,
-                  fontFamily: ff,
-                  fontSize: rs(11),
-                  fontWeight: "700",
-                  paddingHorizontal: rs(12),
-                  paddingVertical: rs(4),
-                  borderRadius: rs(999),
-                }}
-              >
-                EN
-              </Text>
-              <Text
-                style={{
-                  backgroundColor:
-                    locale === "es"
-                      ? onboardingDarkTheme.violetStrong
-                      : "transparent",
-                  color:
-                    locale === "es"
-                      ? onboardingDarkTheme.background
-                      : onboardingDarkTheme.textTertiary,
-                  fontFamily: ff,
-                  fontSize: rs(11),
-                  fontWeight: "700",
-                  paddingHorizontal: rs(12),
-                  paddingVertical: rs(4),
-                  borderRadius: rs(999),
-                }}
-              >
-                ES
-              </Text>
-            </Pressable>
+            <LanguageToggle locale={locale} onToggle={() => void toggleLocale()} />
           </View>
 
-          <View style={{ marginBottom: rs(12) }}>
+          <View style={{ marginBottom: compactScreen ? rs(10) : rs(12) }}>
             <Text
               style={{
                 color: onboardingDarkTheme.accentStrong,
@@ -110,7 +64,7 @@ export function OnboardingScannerScreen({ navigation }: Props) {
                 fontSize: rs(10),
                 fontWeight: "800",
                 letterSpacing: 2.5,
-                marginBottom: rs(12),
+                marginBottom: compactScreen ? rs(8) : rs(12),
                 textTransform: "uppercase",
               }}
             >
@@ -121,10 +75,9 @@ export function OnboardingScannerScreen({ navigation }: Props) {
               style={{
                 color: onboardingDarkTheme.textPrimary,
                 fontFamily: ff,
-                fontSize: rs(38),
+                fontSize: compactScreen ? rs(31) : rs(38),
                 fontWeight: "800",
-                lineHeight: rs(40),
-                letterSpacing: -1.5,
+                lineHeight: compactScreen ? rs(34) : rs(40),
               }}
             >
               {locale === "es"

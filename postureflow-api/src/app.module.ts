@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ExercisesModule } from './exercises/exercises.module';
 import { PostureFlowModule } from './postureflow/postureflow.module';
 import { PrismaModule } from './prisma/prisma.module';
 
@@ -11,6 +12,7 @@ import { PrismaModule } from './prisma/prisma.module';
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     PostureFlowModule,
+    ExercisesModule,
     AuthModule,
   ],
   controllers: [AppController],

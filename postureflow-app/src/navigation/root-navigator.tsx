@@ -1,7 +1,9 @@
-import { useCallback, useMemo, useState } from "react";
-import { View } from "react-native";
+import { useCallback, useLayoutEffect, useMemo, useState } from "react";
+import { ActivityIndicator, Text, View } from "react-native";
 import { AnalyzingScreen } from "../screens/AnalyzingScreen";
 import { AuthScreen } from "../screens/AuthScreen";
+import { ChairExercisePlayerScreen } from "../screens/ChairExercisePlayerScreen";
+import { ChairFlowScreen } from "../screens/ChairFlowScreen";
 import { DashboardScreen } from "../screens/DashboardScreen";
 import { LibraryScreen } from "../screens/LibraryScreen";
 import { OnboardingAhaScreen } from "../screens/onboarding/OnboardingAhaScreen";
@@ -18,12 +20,16 @@ import { SetupScreen } from "../screens/SetupScreen";
 import { SplashScreen } from "../screens/SplashScreen";
 import { SuccessScreen } from "../screens/SuccessScreen";
 import { VerifyEmailScreen } from "../screens/VerifyEmailScreen";
+import { TrainingScreen } from "../screens/TrainingScreen";
 import { zenDarkTheme } from "../theme/zen-dark";
+import { onboardingDarkTheme } from "../theme/onboarding-pro-dark";
 import {
   AppNavigation,
   AppRoute,
   RootStackParamList,
 } from "../types/app";
+import { useAppModel } from "../providers/app-provider";
+import { ff, rs } from "../utils/responsive";
 
 type RouteEntry<Name extends keyof RootStackParamList = keyof RootStackParamList> =
   AppRoute<Name>;
@@ -40,8 +46,17 @@ function createRoute<Name extends keyof RootStackParamList>(
 }
 
 export function RootNavigator() {
-  const [stack, setStack] = useState<RouteEntry[]>([createRoute("Splash")]);
+  const { entryRoute, isHydrated, rootFlow } = useAppModel();
+  const [stack, setStack] = useState<RouteEntry[]>([createRoute(entryRoute)]);
   const currentRoute = stack[stack.length - 1];
+
+  useLayoutEffect(() => {
+    if (!isHydrated) {
+      return;
+    }
+
+    setStack([createRoute(entryRoute)]);
+  }, [entryRoute, isHydrated, rootFlow]);
 
   const navigate = useCallback<AppNavigation["navigate"]>((name, params) => {
     setStack((current) => [...current, createRoute(name, params)]);
@@ -67,9 +82,54 @@ export function RootNavigator() {
     [goBack, navigate, replace],
   );
 
+  if (!isHydrated) {
+    return <RootLoadingScreen />;
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: zenDarkTheme.canvas, overflow: "hidden" }}>
       {renderCurrentRoute(currentRoute, navigation)}
+    </View>
+  );
+}
+
+function RootLoadingScreen() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: onboardingDarkTheme.background,
+        paddingHorizontal: rs(28),
+      }}
+    >
+      <View
+        style={{
+          width: rs(78),
+          height: rs(78),
+          alignItems: "center",
+          justifyContent: "center",
+          borderRadius: rs(26),
+          borderWidth: 1,
+          borderColor: onboardingDarkTheme.border,
+          backgroundColor: onboardingDarkTheme.card,
+        }}
+      >
+        <ActivityIndicator color={onboardingDarkTheme.accentStrong} />
+      </View>
+      <Text
+        style={{
+          marginTop: rs(18),
+          color: onboardingDarkTheme.textSecondary,
+          fontFamily: ff,
+          fontSize: rs(13),
+          fontWeight: "700",
+          textAlign: "center",
+        }}
+      >
+        Preparing PostureFlow
+      </Text>
     </View>
   );
 }
@@ -208,6 +268,33 @@ function renderCurrentRoute(route: RouteEntry, navigation: AppNavigation) {
           key={route.key}
           navigation={navigation}
           route={route as AppRoute<"Library">}
+          isFocused
+        />
+      );
+    case "Training":
+      return (
+        <TrainingScreen
+          key={route.key}
+          navigation={navigation}
+          route={route as AppRoute<"Training">}
+          isFocused
+        />
+      );
+    case "ChairFlow":
+      return (
+        <ChairFlowScreen
+          key={route.key}
+          navigation={navigation}
+          route={route as AppRoute<"ChairFlow">}
+          isFocused
+        />
+      );
+    case "ChairExercisePlayer":
+      return (
+        <ChairExercisePlayerScreen
+          key={route.key}
+          navigation={navigation}
+          route={route as AppRoute<"ChairExercisePlayer">}
           isFocused
         />
       );

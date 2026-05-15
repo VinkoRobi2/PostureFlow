@@ -1,4 +1,5 @@
 import "react-native-gesture-handler";
+import "./global.css";
 import { StatusBar } from "expo-status-bar";
 import { RootNavigator } from "./src/navigation/root-navigator";
 import { AppProvider } from "./src/providers/app-provider";

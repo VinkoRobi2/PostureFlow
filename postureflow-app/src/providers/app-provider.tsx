@@ -55,13 +55,18 @@ import { fromBackendLocale, toBackendLocale } from "../utils/localize";
 type EntryRoute = Extract<
   keyof RootStackParamList,
   | "OnboardingProblem"
+  | "Auth"
   | "VerifyEmail"
   | "Analyzing"
   | "Dashboard"
 >;
 
+export type RootFlow = "onboarding" | "auth" | "dashboard";
+
 type AppContextValue = {
   locale: LocaleCode;
+  userToken: string | null;
+  hasCompletedOnboarding: boolean;
   authSession: AuthSessionSnapshot | null;
   pendingVerification: PendingVerificationState | null;
   bootstrap: BootstrapResponse | null;
@@ -75,7 +80,9 @@ type AppContextValue = {
   isHydrated: boolean;
   isOnline: boolean;
   isSyncing: boolean;
+  rootFlow: RootFlow;
   entryRoute: EntryRoute;
+  completeOnboardingGate: () => Promise<void>;
   toggleLocale: () => Promise<void>;
   loginWithEmail: (email: string, password: string) => Promise<AuthResult>;
   registerWithEmail: (
@@ -87,6 +94,7 @@ type AppContextValue = {
   continueWithGoogle: () => Promise<AuthResult>;
   verifyPendingEmail: (code: string) => Promise<AuthResult>;
   resendVerification: () => Promise<AuthResult | null>;
+  handleLogout: () => Promise<void>;
   logout: () => Promise<void>;
   setOnboardingName: (value: string) => void;
   setScreenHours: (value: number) => void;
@@ -184,6 +192,8 @@ function getSetupOptionIdForScreenHours(hours: number) {
 
 export function AppProvider({ children }: PropsWithChildren) {
   const [locale, setLocale] = useState<LocaleCode>("en");
+  const [userToken, setUserToken] = useState<string | null>(null);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
   const [authSession, setAuthSession] = useState<AuthSessionSnapshot | null>(null);
   const [pendingVerification, setPendingVerification] =
     useState<PendingVerificationState | null>(null);
@@ -207,6 +217,11 @@ export function AppProvider({ children }: PropsWithChildren) {
   const lastProgressSentRef = useRef(0);
 
   const currentUserId = authSession?.user.id ?? bootstrap?.user.id ?? null;
+
+  const completeOnboardingGate = useCallback(async () => {
+    setHasCompletedOnboarding(true);
+    await writeJson(STORAGE_KEYS.hasCompletedOnboarding, true);
+  }, []);
 
   const updateQueue = useCallback(async (nextQueue: PendingSyncEvent[]) => {
     queueRef.current = nextQueue;
@@ -253,6 +268,7 @@ export function AppProvider({ children }: PropsWithChildren) {
       };
 
       startTransition(() => {
+        setUserToken(null);
         setPendingVerification(nextPending);
         setAuthSession(null);
         setBootstrap(null);
@@ -274,6 +290,7 @@ export function AppProvider({ children }: PropsWithChildren) {
       await Promise.all([
         writeJson(STORAGE_KEYS.pendingVerification, nextPending),
         removeMany([
+          STORAGE_KEYS.userToken,
           STORAGE_KEYS.authSession,
           STORAGE_KEYS.bootstrap,
           STORAGE_KEYS.dashboard,
@@ -288,7 +305,10 @@ export function AppProvider({ children }: PropsWithChildren) {
   );
 
   const applyAuthenticatedResult = useCallback(
-    async (result: AuthResult) => {
+    async (
+      result: AuthResult,
+      options: { forceOnboardingCompleted?: boolean } = {},
+    ) => {
       if (!result.authenticated) {
         await applyPendingVerificationState(
           result.email,
@@ -298,9 +318,17 @@ export function AppProvider({ children }: PropsWithChildren) {
       }
 
       const nextLocale = fromBackendLocale(result.bootstrap.locale);
+      const onboardingCompleted =
+        options.forceOnboardingCompleted ||
+        hasCompletedOnboarding ||
+        result.session.user.onboardingCompleted ||
+        result.bootstrap.user.onboardingCompleted ||
+        result.bootstrap.onboarding.completed;
 
       startTransition(() => {
         setLocale(nextLocale);
+        setUserToken(result.session.token);
+        setHasCompletedOnboarding(onboardingCompleted);
         setAuthSession(result.session);
         setPendingVerification(null);
         setBootstrap(result.bootstrap);
@@ -318,6 +346,8 @@ export function AppProvider({ children }: PropsWithChildren) {
 
       await Promise.all([
         writeString(STORAGE_KEYS.locale, nextLocale),
+        writeString(STORAGE_KEYS.userToken, result.session.token),
+        writeJson(STORAGE_KEYS.hasCompletedOnboarding, onboardingCompleted),
         writeJson(STORAGE_KEYS.authSession, result.session),
         writeJson(STORAGE_KEYS.bootstrap, result.bootstrap),
         writeJson(STORAGE_KEYS.dashboard, result.dashboard),
@@ -326,11 +356,12 @@ export function AppProvider({ children }: PropsWithChildren) {
         removeItem(STORAGE_KEYS.pendingVerification),
       ]);
     },
-    [applyPendingVerificationState],
+    [applyPendingVerificationState, hasCompletedOnboarding],
   );
 
   const clearSessionState = useCallback(async () => {
     startTransition(() => {
+      setUserToken(null);
       setAuthSession(null);
       setPendingVerification(null);
       setBootstrap(null);
@@ -351,6 +382,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     queueRef.current = [];
 
     await removeMany([
+      STORAGE_KEYS.userToken,
       STORAGE_KEYS.authSession,
       STORAGE_KEYS.pendingVerification,
       STORAGE_KEYS.bootstrap,
@@ -430,6 +462,8 @@ export function AppProvider({ children }: PropsWithChildren) {
       try {
         const [
           storedLocale,
+          storedUserToken,
+          storedHasCompletedOnboarding,
           storedAuthSession,
           storedPendingVerification,
           storedBootstrap,
@@ -440,6 +474,8 @@ export function AppProvider({ children }: PropsWithChildren) {
           storedSummary,
         ] = await Promise.all([
           readString(STORAGE_KEYS.locale, "en"),
+          readString(STORAGE_KEYS.userToken, ""),
+          readJson<boolean>(STORAGE_KEYS.hasCompletedOnboarding, false),
           readJson<AuthSessionSnapshot | null>(STORAGE_KEYS.authSession, null),
           readJson<PendingVerificationState | null>(
             STORAGE_KEYS.pendingVerification,
@@ -459,8 +495,17 @@ export function AppProvider({ children }: PropsWithChildren) {
             : fromBackendLocale(storedAuthSession?.user.locale ?? storedBootstrap?.locale);
 
         const nextPaywall = storedPaywall ?? createFallbackPaywall();
+        const nextUserToken = storedUserToken || storedAuthSession?.token || null;
+        const nextHasCompletedOnboarding =
+          storedHasCompletedOnboarding ||
+          storedAuthSession?.user.onboardingCompleted ||
+          storedBootstrap?.user.onboardingCompleted ||
+          storedBootstrap?.onboarding.completed ||
+          false;
 
         setLocale(nextLocale);
+        setUserToken(nextUserToken);
+        setHasCompletedOnboarding(nextHasCompletedOnboarding);
         setAuthSession(storedAuthSession);
         setPendingVerification(storedPendingVerification);
         setSuccessSummary(storedSummary);
@@ -485,6 +530,15 @@ export function AppProvider({ children }: PropsWithChildren) {
           setPaywall(nextPaywall);
           setPainSelection(nextBootstrap.onboarding.selectedPainRegionIds);
           setSetupSelection(nextBootstrap.onboarding.selectedSetupOptionIds);
+          await Promise.all([
+            nextUserToken
+              ? writeString(STORAGE_KEYS.userToken, nextUserToken)
+              : removeItem(STORAGE_KEYS.userToken),
+            writeJson(
+              STORAGE_KEYS.hasCompletedOnboarding,
+              nextHasCompletedOnboarding,
+            ),
+          ]);
         } else {
           setBootstrap(null);
           setDashboard(null);
@@ -499,6 +553,8 @@ export function AppProvider({ children }: PropsWithChildren) {
         const nextPaywall = createFallbackPaywall();
 
         setLocale(nextLocale);
+        setUserToken(null);
+        setHasCompletedOnboarding(false);
         setAuthSession(null);
         setPendingVerification(null);
         setBootstrap(null);
@@ -602,10 +658,11 @@ export function AppProvider({ children }: PropsWithChildren) {
         toBackendLocale(locale),
         lastName,
       );
-      await applyAuthenticatedResult(result);
+      await completeOnboardingGate();
+      await applyAuthenticatedResult(result, { forceOnboardingCompleted: true });
       return result;
     },
-    [applyAuthenticatedResult, locale],
+    [applyAuthenticatedResult, completeOnboardingGate, locale],
   );
 
   const loginWithEmail = useCallback(
@@ -668,7 +725,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     return result;
   }, [applyPendingVerificationState, pendingVerification?.email]);
 
-  const logout = useCallback(async () => {
+  const handleLogout = useCallback(async () => {
     if (authSession?.token && isOnline) {
       try {
         await api.logout(authSession.token);
@@ -681,8 +738,17 @@ export function AppProvider({ children }: PropsWithChildren) {
       await signOutGoogle();
     }
 
+    await completeOnboardingGate();
     await clearSessionState();
-  }, [authSession?.provider, authSession?.token, clearSessionState, isOnline]);
+  }, [
+    authSession?.provider,
+    authSession?.token,
+    clearSessionState,
+    completeOnboardingGate,
+    isOnline,
+  ]);
+
+  const logout = handleLogout;
 
   const setOnboardingName = useCallback((value: string) => {
     setOnboardingDraft((current) => ({
@@ -727,6 +793,7 @@ export function AppProvider({ children }: PropsWithChildren) {
       },
     };
 
+    await completeOnboardingGate();
     await applyBootstrap(optimisticBootstrap);
 
     if (authSession) {
@@ -781,6 +848,7 @@ export function AppProvider({ children }: PropsWithChildren) {
     locale,
     painSelection,
     setupSelection,
+    completeOnboardingGate,
     clearOnboardingDraft,
   ]);
 
@@ -964,37 +1032,54 @@ export function AppProvider({ children }: PropsWithChildren) {
     ],
   );
 
+  const rootFlow = useMemo<RootFlow>(() => {
+    if (!hasCompletedOnboarding) {
+      return "onboarding";
+    }
+
+    if (!userToken) {
+      return "auth";
+    }
+
+    return "dashboard";
+  }, [hasCompletedOnboarding, userToken]);
+
   const entryRoute = useMemo<EntryRoute>(() => {
-    if (authSession) {
-      const onboardingCompleted =
-        bootstrap?.user.onboardingCompleted ?? authSession.user.onboardingCompleted;
-      if (onboardingCompleted) {
-        return "Dashboard";
-      }
-
-      if (painSelection.length > 0 && setupSelection.length > 0) {
-        return "Analyzing";
-      }
-
+    if (rootFlow === "onboarding") {
       return "OnboardingProblem";
     }
 
-    if (pendingVerification?.email) {
-      return "VerifyEmail";
+    if (rootFlow === "auth") {
+      return pendingVerification?.email ? "VerifyEmail" : "Auth";
     }
 
-    return "OnboardingProblem";
+    const serverOnboardingCompleted =
+      bootstrap?.user.onboardingCompleted ?? authSession?.user.onboardingCompleted;
+
+    if (
+      authSession &&
+      serverOnboardingCompleted === false &&
+      painSelection.length > 0 &&
+      setupSelection.length > 0
+    ) {
+      return "Analyzing";
+    }
+
+    return "Dashboard";
   }, [
     authSession,
     bootstrap?.user.onboardingCompleted,
     painSelection.length,
     pendingVerification?.email,
+    rootFlow,
     setupSelection.length,
   ]);
 
   const value = useMemo<AppContextValue>(
     () => ({
       locale,
+      userToken,
+      hasCompletedOnboarding,
       authSession,
       pendingVerification,
       bootstrap,
@@ -1008,13 +1093,16 @@ export function AppProvider({ children }: PropsWithChildren) {
       isHydrated,
       isOnline,
       isSyncing,
+      rootFlow,
       entryRoute,
+      completeOnboardingGate,
       toggleLocale,
       loginWithEmail,
       registerWithEmail,
       continueWithGoogle,
       verifyPendingEmail,
       resendVerification,
+      handleLogout,
       logout,
       setOnboardingName,
       setScreenHours,
@@ -1032,10 +1120,13 @@ export function AppProvider({ children }: PropsWithChildren) {
       authSession,
       bootstrap,
       completeActiveSession,
+      completeOnboardingGate,
       continueWithGoogle,
       dashboard,
       downloadRoutine,
       entryRoute,
+      handleLogout,
+      hasCompletedOnboarding,
       isHydrated,
       isOnline,
       isSyncing,
@@ -1050,6 +1141,7 @@ export function AppProvider({ children }: PropsWithChildren) {
       refreshRemoteState,
       registerWithEmail,
       resendVerification,
+      rootFlow,
       setOnboardingName,
       setScreenHours,
       clearOnboardingDraft,
@@ -1059,6 +1151,7 @@ export function AppProvider({ children }: PropsWithChildren) {
       successSummary,
       toggleLocale,
       updateActiveSessionProgress,
+      userToken,
       verifyPendingEmail,
     ],
   );

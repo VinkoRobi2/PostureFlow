@@ -8,6 +8,60 @@ export type LocalizedText = {
   es: string;
 };
 
+export type TrainingExerciseCategory =
+  | "Respiracion"
+  | "Espalda"
+  | "Flujo Completo";
+
+export type TrainingExercise = {
+  id: string;
+  title: string;
+  duration: string;
+  category: TrainingExerciseCategory;
+  videoUrl: string;
+  description: string;
+};
+
+export type ChairExerciseCategory =
+  | "Upper Body"
+  | "Lower Body"
+  | "Full Flow";
+
+export type ChairExerciseDifficulty = "Beginner" | "Intermediate";
+
+export type ChairFlowExercise = {
+  id: string;
+  title: string;
+  duration: string;
+  difficulty: ChairExerciseDifficulty;
+  youtubeId: string;
+  startTime: number;
+  endTime: number;
+  category: ChairExerciseCategory;
+};
+
+export type ChairDashboardExercise = {
+  id: string;
+  title: string;
+  youtubeId: string;
+  startTime: number;
+  endTime: number;
+  category: ChairExerciseCategory;
+  duration: string;
+  completed: boolean;
+};
+
+export type ChairDashboardResponse = {
+  user: {
+    id: string;
+    firstName: string;
+  };
+  dailyProgressPercentage: number;
+  completedCount: number;
+  totalCount: number;
+  exercises: ChairDashboardExercise[];
+};
+
 export type UserSummary = {
   id: string;
   firstName: string;
@@ -232,6 +286,9 @@ export type RootStackParamList = {
   Analyzing: undefined;
   Dashboard: undefined;
   Library: undefined;
+  Training: undefined;
+  ChairFlow: undefined;
+  ChairExercisePlayer: { exerciseId: string };
   Paywall: undefined;
   Player: { routineId: string };
   Success: undefined;

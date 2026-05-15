@@ -51,6 +51,11 @@ export class PostureFlowController {
     return this.postureFlowService.getLibrary(userId);
   }
 
+  @Get('exercises')
+  getExercises() {
+    return this.postureFlowService.getExercises();
+  }
+
   @Post('library/download')
   downloadRoutine(@Body() dto: DownloadRoutineDto) {
     return this.postureFlowService.downloadRoutine(dto);

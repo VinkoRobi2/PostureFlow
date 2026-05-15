@@ -9,7 +9,7 @@ import { getLocalizedOnboardingText } from "./content";
 type Props = AppScreenProps<"OnboardingTrust">;
 
 export function OnboardingTrustScreen({ navigation }: Props) {
-  const { locale } = useAppModel();
+  const { completeOnboardingGate, locale } = useAppModel();
   const copy = getLocalizedOnboardingText(locale);
   const notes =
     locale === "es"
@@ -155,7 +155,11 @@ export function OnboardingTrustScreen({ navigation }: Props) {
 
         <View style={{ paddingTop: rs(32) }}>
           <Pressable
-            onPress={() => navigation.replace("Auth", { mode: "register" })}
+            onPress={() => {
+              void completeOnboardingGate().then(() =>
+                navigation.replace("Auth", { mode: "register" }),
+              );
+            }}
             style={({ pressed }) => ({
               backgroundColor: onboardingDarkTheme.accentStrong,
               borderRadius: rs(18),
@@ -177,7 +181,11 @@ export function OnboardingTrustScreen({ navigation }: Props) {
           </Pressable>
 
           <Text
-            onPress={() => navigation.replace("Auth", { mode: "login" })}
+            onPress={() => {
+              void completeOnboardingGate().then(() =>
+                navigation.replace("Auth", { mode: "login" }),
+              );
+            }}
             style={{
               marginTop: rs(16),
               color: onboardingDarkTheme.textTertiary,

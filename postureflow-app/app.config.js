@@ -20,19 +20,25 @@ function getGoogleIosUrlScheme() {
 module.exports = () => {
   const googleIosUrlScheme = getGoogleIosUrlScheme();
   const existingPlugins = appConfig.expo.plugins ?? [];
+  const hasExpoVideoPlugin = existingPlugins.some((plugin) =>
+    Array.isArray(plugin) ? plugin[0] === "expo-video" : plugin === "expo-video",
+  );
+  const basePlugins = hasExpoVideoPlugin
+    ? existingPlugins
+    : [...existingPlugins, "expo-video"];
 
   return {
     expo: {
       ...appConfig.expo,
       plugins: googleIosUrlScheme
         ? [
-            ...existingPlugins,
+            ...basePlugins,
             [
               "@react-native-google-signin/google-signin",
               { iosUrlScheme: googleIosUrlScheme },
             ],
           ]
-        : existingPlugins,
+        : basePlugins,
     },
   };
 };

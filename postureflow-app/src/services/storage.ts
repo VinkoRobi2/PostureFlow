@@ -3,6 +3,8 @@ import * as SecureStore from "expo-secure-store";
 
 export const STORAGE_KEYS = {
   locale: "@postureflow/locale",
+  userToken: "@postureflow/userToken",
+  hasCompletedOnboarding: "@postureflow/hasCompletedOnboarding",
   authSession: "@postureflow/auth-session",
   pendingVerification: "@postureflow/pending-verification",
   bootstrap: "@postureflow/bootstrap",

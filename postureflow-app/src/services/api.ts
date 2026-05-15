@@ -1,14 +1,17 @@
-import { API_BASE_URL } from "../config/api";
+import { API_BASE_URL, API_ORIGIN_URL } from "../config/api";
 import {
   AuthResult,
   BackendLocale,
+  ChairDashboardResponse,
   BootstrapResponse,
+  ChairFlowExercise,
   CompleteSessionResponse,
   DashboardResponse,
   LibraryResponse,
   PaywallResponse,
   PendingSyncEvent,
   StartSessionResponse,
+  TrainingExercise,
 } from "../types/app";
 
 type RequestOptions = Omit<RequestInit, "body"> & {
@@ -26,7 +29,19 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, options: RequestOptions = {}) {
-  if (!API_BASE_URL) {
+  return requestWithBaseUrl<T>(API_BASE_URL, path, options);
+}
+
+async function requestFromOrigin<T>(path: string, options: RequestOptions = {}) {
+  return requestWithBaseUrl<T>(API_ORIGIN_URL || API_BASE_URL, path, options);
+}
+
+async function requestWithBaseUrl<T>(
+  baseUrl: string,
+  path: string,
+  options: RequestOptions = {},
+) {
+  if (!baseUrl) {
     throw new ApiError(
       0,
       "Missing EXPO_PUBLIC_API_URL. Add it to your .env file before calling the backend.",
@@ -37,7 +52,7 @@ async function request<T>(path: string, options: RequestOptions = {}) {
   const timeout = setTimeout(() => controller.abort(), 10000);
 
   try {
-    const response = await fetch(`${API_BASE_URL}${path}`, {
+    const response = await fetch(`${baseUrl}${path}`, {
       ...options,
       headers: {
         Accept: "application/json",
@@ -184,6 +199,25 @@ export const api = {
   },
   getLibrary(userId: string) {
     return request<LibraryResponse>(`/library/${userId}`);
+  },
+  getExercises() {
+    return request<TrainingExercise[]>("/exercises");
+  },
+  getChairFlowExercises() {
+    return requestFromOrigin<ChairFlowExercise[]>("/api/exercises/chair");
+  },
+  getChairDashboard(userId?: string) {
+    const query = userId ? `?userId=${encodeURIComponent(userId)}` : "";
+    return requestFromOrigin<ChairDashboardResponse>(`/api/dashboard${query}`);
+  },
+  completeChairExercise(exerciseId: string, userId?: string) {
+    return requestFromOrigin<ChairDashboardResponse>("/api/complete-exercise", {
+      method: "POST",
+      body: {
+        exerciseId,
+        ...(userId ? { userId } : {}),
+      },
+    });
   },
   downloadRoutine(userId: string, routineId: string) {
     return request<LibraryResponse>("/library/download", {

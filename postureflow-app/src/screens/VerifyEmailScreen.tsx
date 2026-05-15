@@ -23,6 +23,7 @@ type Props = AppScreenProps<"VerifyEmail">;
 export function VerifyEmailScreen({ navigation }: Props) {
   const {
     isOnline,
+    hasCompletedOnboarding,
     locale,
     logout,
     pendingVerification,
@@ -38,7 +39,17 @@ export function VerifyEmailScreen({ navigation }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const goNext = (onboardingCompleted: boolean) => {
-    if (onboardingCompleted) {
+    if (
+      !onboardingCompleted &&
+      hasCompletedOnboarding &&
+      painSelection.length > 0 &&
+      setupSelection.length > 0
+    ) {
+      navigation.replace("Analyzing");
+      return;
+    }
+
+    if (onboardingCompleted || hasCompletedOnboarding) {
       navigation.replace("Dashboard");
       return;
     }

@@ -24,7 +24,13 @@ import {
   UpdateLocaleDto,
   UpdateSessionProgressDto,
 } from './dto/postureflow.dto';
-import { DEMO_USER, PAIN_REGIONS, ROUTINES, SETUP_OPTIONS } from './seed-data';
+import {
+  DEMO_USER,
+  PAIN_REGIONS,
+  ROUTINES,
+  SETUP_OPTIONS,
+  TRAINING_EXERCISES,
+} from './seed-data';
 
 type LocalizedText = {
   en: string;
@@ -238,6 +244,12 @@ export class PostureFlowService {
         downloaded: downloadedRoutineIds.has(routine.id),
       })),
     };
+  }
+
+  async getExercises() {
+    await this.ensureReady();
+
+    return TRAINING_EXERCISES.map((exercise) => ({ ...exercise }));
   }
 
   async downloadRoutine(dto: DownloadRoutineDto) {
